@@ -48,7 +48,7 @@ public class SistemaGestionDesastres {
     public void agregarAdmin(Admin a) { administradores.add(a); }
     public void agregarEvacuacion(Evacuacion e) { evacuaciones.add(e); }
 
-    //REGISTRO Y AUTENTIFICACION
+    //APARTADO REGISTRO Y AUTENTIFICACION
     public boolean registrarAdmin(String nombre, String id) {
         for (Admin a : administradores) {
             if (a.getNombre().equalsIgnoreCase(nombre)) {
@@ -81,6 +81,48 @@ public class SistemaGestionDesastres {
             }
         }
         return "NO_EXISTE";
+    }
+
+    //APARTADO ASIGNACION DE RECURSOS
+    public boolean asignarRecursoAZona(TipoRecurso tipo, int cantidad, Zona zona) {
+        
+        int totalDisponible = 0;
+        for (Recurso r : recursos) {
+            if (r.getTipo() == tipo && r.getEstado() == EstadoRecurso.DISPONIBLE) {
+                totalDisponible += r.getCantidad();
+            }
+        }
+
+        if (totalDisponible < cantidad) {
+            return false;
+        }
+
+        zona.getInventario().put(tipo, zona.getInventario().getOrDefault(tipo, 0) + cantidad);
+
+        // Reducimos de los recursos disponibles
+        int restante = cantidad;
+        for (Recurso r : recursos) {
+            if (r.getTipo() == tipo && r.getEstado() == EstadoRecurso.DISPONIBLE) {
+                if (r.getCantidad() >= restante) {
+                    r.setCantidad(r.getCantidad() - restante);
+                    if (r.getCantidad() == 0) r.setEstado(EstadoRecurso.ASIGNADO);
+                    break;
+                } else {
+                    restante -= r.getCantidad();
+                    r.setCantidad(0);
+                    r.setEstado(EstadoRecurso.ASIGNADO);
+                }
+            }
+        }
+
+        return true;
+    }
+
+    public void mostrarInventarioZona(Zona z) {
+        System.out.println("Inventario de la zona: " + z.getNombre());
+        for (TipoRecurso tipo : z.getInventario().keySet()) {
+            System.out.println("- " + tipo + ": " + z.getInventario().get(tipo));
+        }
     }
     /**
      * Metodo para crear un sistema de gestion con datos quemados
