@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SistemaGestionDesastres {
+
+    //Listas principales del sistema
     private static SistemaGestionDesastres instancia;
     private final GrafoDirigido grafo = new GrafoDirigido();
     private final List<Zona> zonas = new ArrayList<>();
@@ -18,7 +20,7 @@ public class SistemaGestionDesastres {
 
     private SistemaGestionDesastres() {}
 
-
+    //Obtener la instancia unica del sistema
     public static SistemaGestionDesastres getInstancia() {
         if (instancia == null) instancia = new SistemaGestionDesastres();
         return instancia;
@@ -36,7 +38,7 @@ public class SistemaGestionDesastres {
     public List<Ruta> getRutas() { return rutas; }
     public List<Evacuacion> getEvacuaciones() { return evacuaciones; }
 
-
+    //Metodos para agregar entidades
     public void agregarZona(Zona z) { zonas.add(z); grafo.agregarZona(z); }
     public void agregarRuta(Ruta r) { rutas.add(r); }
     public void agregarRecurso(Recurso r) { recursos.add(r); }
@@ -46,6 +48,40 @@ public class SistemaGestionDesastres {
     public void agregarAdmin(Admin a) { administradores.add(a); }
     public void agregarEvacuacion(Evacuacion e) { evacuaciones.add(e); }
 
+    //REGISTRO Y AUTENTIFICACION
+    public boolean registrarAdmin(String nombre, String id) {
+        for (Admin a : administradores) {
+            if (a.getNombre().equalsIgnoreCase(nombre)) {
+                return false;
+            }
+        }
+        administradores.add(new Admin(nombre, id));
+        return true;
+    }
+
+    public boolean registrarOperador(String nombre, String id) {
+        for (OperadorEmergencia o : operadores) {
+            if (o.getNombre().equalsIgnoreCase(nombre)) {
+                return false;
+            }
+        }
+        operadores.add(new OperadorEmergencia(nombre, id));
+        return true;
+    }
+
+    public String autenticar(String nombre, String id) {
+        for (Admin a : administradores) {
+            if (a.getNombre().equalsIgnoreCase(nombre)) {
+                return "ADMIN";
+            }
+        }
+        for (OperadorEmergencia o : operadores) {
+            if (o.getNombre().equalsIgnoreCase(nombre)) {
+                return "OPERADOR";
+            }
+        }
+        return "NO_EXISTE";
+    }
     /**
      * Metodo para crear un sistema de gestion con datos quemados
      * @return
