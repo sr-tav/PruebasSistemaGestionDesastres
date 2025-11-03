@@ -1,7 +1,9 @@
 package com.example.pruebassistemadesastres.model;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.PriorityQueue;
 
 public class SistemaGestionDesastres {
 
@@ -85,7 +87,6 @@ public class SistemaGestionDesastres {
 
     //APARTADO ASIGNACION DE RECURSOS
     public boolean asignarRecursoAZona(TipoRecurso tipo, int cantidad, Zona zona) {
-        
         int totalDisponible = 0;
         for (Recurso r : recursos) {
             if (r.getTipo() == tipo && r.getEstado() == EstadoRecurso.DISPONIBLE) {
@@ -123,6 +124,39 @@ public class SistemaGestionDesastres {
         for (TipoRecurso tipo : z.getInventario().keySet()) {
             System.out.println("- " + tipo + ": " + z.getInventario().get(tipo));
         }
+    }
+
+    //COLA DE PRIORIDAD
+    private final PriorityQueue<Evacuacion> colaEvacuaciones =
+            new PriorityQueue<>(new Comparator<Evacuacion>() {
+                @Override
+                public int compare(Evacuacion e1, Evacuacion e2) {
+                    // Prioridad: mayor nivel de riesgo primero
+                    return Integer.compare(e2.getOrigen().getNivelRiesgo(), e1.getOrigen().getNivelRiesgo());
+                }
+            });
+
+    // Getter para la cola
+    public PriorityQueue<Evacuacion> getColaEvacuaciones() {
+        return colaEvacuaciones;
+    }
+
+    public void planificarEvacuacion(Evacuacion ev) {
+        colaEvacuaciones.add(ev);
+        System.out.println("Evacuación planificada: " + ev.getPersonas() +
+                " personas desde " + ev.getOrigen().getNombre() +
+                " hacia " + ev.getDestino().getNombre());
+    }
+
+    public Evacuacion procesarEvacuacion() {
+        if (colaEvacuaciones.isEmpty()) {
+            System.out.println("No hay evacuaciones pendientes.");
+            return null;
+        }
+        Evacuacion ev = colaEvacuaciones.poll();
+        System.out.println("Procesando evacuación de " + ev.getPersonas() +
+                " personas desde " + ev.getOrigen().getNombre());
+        return ev;
     }
     /**
      * Metodo para crear un sistema de gestion con datos quemados
