@@ -2,7 +2,12 @@ package com.example.pruebassistemadesastres.viewController;
 
 import com.sothawo.mapjfx.*;
 import javafx.application.Platform;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.chart.PieChart;
+import javafx.scene.control.Button;
+import javafx.scene.control.TableView;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
@@ -12,6 +17,177 @@ public class DashboardAdminViewController {
     @FXML private Pane paneMapa;
 
     private MapView mapView;
+
+    @FXML
+    private Button ActualizarRecursosDistribuidos;
+
+    @FXML
+    private AnchorPane PaneAdmin;
+
+    @FXML
+    private AnchorPane PaneEstads;
+
+    @FXML
+    private AnchorPane PaneInicio;
+
+    @FXML
+    private AnchorPane PaneRutas;
+
+    @FXML
+    private Button actualizarAvanceEvacuaciones;
+
+    @FXML
+    private Button actualizarInventarioaAdmin;
+
+    @FXML
+    private Button actualizarRutas;
+
+    @FXML
+    private Button agregarRuta;
+
+    @FXML
+    private Button asginarEquiposAdmin;
+
+    @FXML
+    private Button btnAdmin;
+
+    @FXML
+    private Button btnEstadisticas;
+
+    @FXML
+    private Button btnInicio;
+
+    @FXML
+    private Button btnRutas;
+
+    @FXML
+    private Button cerrarSesionAdmin;
+
+    @FXML
+    private Button equiposAdmin;
+
+    @FXML
+    private PieChart graficoAvanceRecursos;
+
+    @FXML
+    private PieChart graficoRecursosDistribuidos;
+
+    @FXML
+    private Button minimizarAdmin;
+
+    @FXML
+    private Button recursosInicio;
+
+    @FXML
+    private Button salirAdmin;
+
+    @FXML
+    private Button simulacro;
+
+    @FXML
+    private TableView<?> tablaGestionInventario;
+
+    @FXML
+    void btnActualizarAvanceEvacuaciones(ActionEvent event) {
+
+    }
+
+    @FXML
+    void btnActualizarInventarioAdmin(ActionEvent event) {
+
+    }
+
+    @FXML
+    void btnActualizarRecursosDistribuidos(ActionEvent event) {
+
+    }
+
+    @FXML
+    void btnActualizarRutas(ActionEvent event) {
+
+    }
+
+    @FXML
+    void btnAgregarRuta(ActionEvent event) {
+
+    }
+
+    @FXML
+    void btnAsignarEquiposAdmin(ActionEvent event) {
+
+    }
+
+    @FXML
+    void btnCerrarSesionAdmin(ActionEvent event) {
+
+    }
+
+    @FXML
+    void btnEquiposInicio(ActionEvent event) {
+
+    }
+
+    @FXML
+    void btnMinimizarAdmin(ActionEvent event) {
+
+    }
+
+    @FXML
+    void btnRecursosInicio(ActionEvent event) {
+
+    }
+
+    @FXML
+    void btnSalirAdmin(ActionEvent event) {
+
+    }
+
+    @FXML
+    void btnSimulacro(ActionEvent event) {
+
+    }
+
+    @FXML
+    void clickAdmin(ActionEvent event) {
+        paneMapa.setVisible(true);
+        PaneInicio.setVisible(false);
+        PaneRutas.setVisible(false);
+        PaneEstads.setVisible(false);
+        PaneAdmin.setVisible(true);
+        paneMapa.setPrefWidth(750);
+        paneMapa.setPrefHeight(536);
+    }
+
+    @FXML
+    void clickEstadisticas(ActionEvent event) {
+        PaneInicio.setVisible(false);
+        PaneRutas.setVisible(false);
+        PaneEstads.setVisible(true);
+        PaneAdmin.setVisible(false);
+        paneMapa.setVisible(false);
+    }
+
+    @FXML
+    void clickInicio(ActionEvent event) {
+        paneMapa.setVisible(true);
+        PaneInicio.setVisible(true);
+        PaneRutas.setVisible(false);
+        PaneEstads.setVisible(false);
+        PaneAdmin.setVisible(false);
+        paneMapa.setPrefWidth(1250);
+        paneMapa.setPrefHeight(536);
+    }
+
+    @FXML
+    void clickRutas(ActionEvent event) {
+        paneMapa.setVisible(true);
+        PaneInicio.setVisible(false);
+        PaneRutas.setVisible(true);
+        PaneEstads.setVisible(false);
+        PaneAdmin.setVisible(false);
+        paneMapa.setPrefWidth(750);
+        paneMapa.setPrefHeight(536);
+    }
 
     // Mantén referencias FUERTES a los overlays
     private Marker mDesastre;

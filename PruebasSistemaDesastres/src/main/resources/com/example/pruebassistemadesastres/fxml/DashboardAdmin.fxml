@@ -1,11 +1,382 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.chart.PieChart?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.Pane?>
-
+<?import javafx.scene.paint.Color?>
+<?import javafx.scene.paint.RadialGradient?>
+<?import javafx.scene.paint.Stop?>
+<?import javafx.scene.text.Text?>
 
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="720.0" prefWidth="1250.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.pruebassistemadesastres.viewController.DashboardAdminViewController">
    <children>
-      <Pane fx:id="paneMapa" layoutX="64.0" layoutY="54.0" prefHeight="622.0" prefWidth="667.0" />
+      <AnchorPane prefHeight="42.0" prefWidth="1250.0" style="-fx-background-color: #141587;">
+         <children>
+            <Button fx:id="btnInicio" layoutX="17.0" layoutY="6.0" mnemonicParsing="false" onAction="#clickInicio" prefHeight="26.0" prefWidth="79.0" style="-fx-border-radius: 30; -fx-border-color: black; -fx-background-color: #141587; -fx-background-radius: 30; -fx-border-width: 2;" text="INICIO">
+               <textFill>
+                  <RadialGradient centerX="0.5" centerY="0.5" radius="0.5">
+                     <stops>
+                        <Stop>
+                           <color>
+                              <Color red="1.0" green="1.0" blue="1.0" />
+                           </color>
+                        </Stop>
+                        <Stop offset="1.0">
+                           <color>
+                              <Color red="1.0" green="1.0" blue="1.0" />
+                           </color>
+                        </Stop>
+                     </stops>
+                  </RadialGradient>
+               </textFill>
+            </Button>
+            <Button fx:id="btnAdmin" layoutX="102.0" layoutY="6.0" mnemonicParsing="false" onAction="#clickAdmin" prefHeight="26.0" prefWidth="79.0" style="-fx-border-radius: 30; -fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-width: 2;" text="ADMIN" textFill="WHITE" />
+            <Button fx:id="btnRutas" layoutX="189.0" layoutY="6.0" mnemonicParsing="false" onAction="#clickRutas" prefHeight="26.0" prefWidth="79.0" style="-fx-border-radius: 30; -fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-width: 2;" text="RUTAS" textFill="WHITE" />
+            <Button fx:id="btnEstadisticas" layoutX="277.0" layoutY="6.0" mnemonicParsing="false" onAction="#clickEstadisticas" prefHeight="30.0" prefWidth="104.0" style="-fx-border-radius: 30; -fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-width: 2;" text="ESTADISTICAS">
+               <textFill>
+                  <RadialGradient centerX="0.5" centerY="0.5" radius="0.5">
+                     <stops>
+                        <Stop>
+                           <color>
+                              <Color red="1.0" green="1.0" blue="1.0" />
+                           </color>
+                        </Stop>
+                        <Stop offset="1.0">
+                           <color>
+                              <Color red="1.0" green="1.0" blue="1.0" />
+                           </color>
+                        </Stop>
+                     </stops>
+                  </RadialGradient>
+               </textFill>
+            </Button>
+            <Button fx:id="salirAdmin" layoutX="1179.0" layoutY="6.0" mnemonicParsing="false" onAction="#btnSalirAdmin" prefHeight="30.0" prefWidth="57.0" style="-fx-border-radius: 30; -fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-width: 2;" text="X">
+               <textFill>
+                  <RadialGradient centerX="0.5" centerY="0.5" radius="0.5">
+                     <stops>
+                        <Stop>
+                           <color>
+                              <Color red="1.0" green="1.0" blue="1.0" />
+                           </color>
+                        </Stop>
+                        <Stop offset="1.0">
+                           <color>
+                              <Color red="1.0" green="1.0" blue="1.0" />
+                           </color>
+                        </Stop>
+                     </stops>
+                  </RadialGradient>
+               </textFill>
+            </Button>
+            <Button fx:id="minimizarAdmin" layoutX="1111.0" layoutY="6.0" mnemonicParsing="false" onAction="#btnMinimizarAdmin" prefHeight="30.0" prefWidth="58.0" style="-fx-border-radius: 30; -fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-width: 2;" text="-">
+               <textFill>
+                  <RadialGradient centerX="0.5" centerY="0.5" radius="0.5">
+                     <stops>
+                        <Stop>
+                           <color>
+                              <Color red="1.0" green="1.0" blue="1.0" />
+                           </color>
+                        </Stop>
+                        <Stop offset="1.0">
+                           <color>
+                              <Color red="1.0" green="1.0" blue="1.0" />
+                           </color>
+                        </Stop>
+                     </stops>
+                  </RadialGradient>
+               </textFill>
+            </Button>
+         </children>
+      </AnchorPane>
+      <AnchorPane fx:id="PaneAdmin" layoutY="42.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="678.0" prefWidth="1250.0" style="-fx-background-color: #02032d; -fx-border-color: black;" visible="false">
+         <children>
+            <AnchorPane layoutX="872.0" layoutY="358.0" prefHeight="270.0" prefWidth="326.0" style="-fx-background-color: #141587; -fx-border-radius: 30; -fx-background-radius: 30;">
+               <children>
+                  <TableView fx:id="tablaGestionInventario" layoutX="48.0" layoutY="7.0" prefHeight="256.0" prefWidth="230.0" style="-fx-background-color: #141587; -fx-border-color: white;">
+                     <columns>
+                        <TableColumn prefWidth="75.0" style="-fx-background-color: #141587; -fx-border-color: white;" text="RECURSO" />
+                        <TableColumn prefWidth="75.0" style="-fx-background-color: #141587; -fx-border-color: white;" text="CANTIDAD" />
+                        <TableColumn prefWidth="75.0" style="-fx-border-color: white; -fx-background-color: #141587;" styleClass=".fx.border.color" text="ESTADO" />
+                     </columns>
+                  </TableView>
+               </children>
+            </AnchorPane>
+            <TextField layoutX="861.0" layoutY="310.0" style="-fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-radius: 30;" />
+            <Text fill="WHITE" layoutX="877.0" layoutY="328.0" strokeType="OUTSIDE" strokeWidth="0.0" text="GESTION INVENTARIO" />
+            <TextField layoutX="884.0" layoutY="55.0" style="-fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-radius: 30;" />
+            <Text fill="WHITE" layoutX="892.0" layoutY="73.0" strokeType="OUTSIDE" strokeWidth="0.0" text="ASIGNACION DE EQUIPO" />
+            <AnchorPane layoutX="862.0" layoutY="107.0" prefHeight="179.0" prefWidth="346.0" style="-fx-background-color: #141587; -fx-border-radius: 30; -fx-background-radius: 30;">
+               <children>
+                  <TextField layoutX="20.0" layoutY="39.0" prefHeight="27.0" prefWidth="128.0" style="-fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-radius: 30;" />
+                  <TextField layoutX="21.0" layoutY="79.0" prefHeight="27.0" prefWidth="128.0" style="-fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-radius: 30;" />
+                  <TextField layoutX="21.0" layoutY="122.0" prefHeight="27.0" prefWidth="128.0" style="-fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-radius: 30;" />
+                  <Text fill="WHITE" layoutX="58.0" layoutY="57.0" strokeType="OUTSIDE" strokeWidth="0.0" text="EQUIPO 1" />
+                  <Text fill="WHITE" layoutX="58.0" layoutY="97.0" strokeType="OUTSIDE" strokeWidth="0.0" text="EQUIPO 2" />
+                  <Text fill="WHITE" layoutX="62.0" layoutY="140.0" strokeType="OUTSIDE" strokeWidth="0.0" text="EQUIPO 3" />
+                  <TextField layoutX="197.0" layoutY="39.0" prefHeight="27.0" prefWidth="112.0" style="-fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-radius: 30;" />
+                  <TextField layoutX="197.0" layoutY="79.0" prefHeight="27.0" prefWidth="112.0" style="-fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-radius: 30;" />
+                  <TextField layoutX="197.0" layoutY="122.0" prefHeight="27.0" prefWidth="112.0" style="-fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-radius: 30;" />
+               </children>
+            </AnchorPane>
+            <Button fx:id="asginarEquiposAdmin" layoutX="1084.0" layoutY="54.0" mnemonicParsing="false" onAction="#btnAsignarEquiposAdmin" prefHeight="30.0" prefWidth="104.0" style="-fx-border-radius: 30; -fx-border-color: black; -fx-background-color: #141587; -fx-background-radius: 30; -fx-border-width: 2;" text="ASIGNAR">
+               <textFill>
+                  <RadialGradient centerX="0.5" centerY="0.5" radius="0.5">
+                     <stops>
+                        <Stop>
+                           <color>
+                              <Color red="1.0" green="1.0" blue="1.0" />
+                           </color>
+                        </Stop>
+                        <Stop offset="1.0">
+                           <color>
+                              <Color red="1.0" green="1.0" blue="1.0" />
+                           </color>
+                        </Stop>
+                     </stops>
+                  </RadialGradient>
+               </textFill>
+            </Button>
+            <Button fx:id="actualizarInventarioaAdmin" layoutX="1043.0" layoutY="308.0" mnemonicParsing="false" onAction="#btnActualizarInventarioAdmin" prefHeight="32.0" prefWidth="165.0" style="-fx-border-radius: 30; -fx-border-color: black; -fx-background-color: #141587; -fx-background-radius: 30; -fx-border-width: 2;" text="ACTUALIZAR INVENTARIO">
+               <textFill>
+                  <RadialGradient centerX="0.5" centerY="0.5" radius="0.5">
+                     <stops>
+                        <Stop>
+                           <color>
+                              <Color red="1.0" green="1.0" blue="1.0" />
+                           </color>
+                        </Stop>
+                        <Stop offset="1.0">
+                           <color>
+                              <Color red="1.0" green="1.0" blue="1.0" />
+                           </color>
+                        </Stop>
+                     </stops>
+                  </RadialGradient>
+               </textFill>
+            </Button>
+            <Button fx:id="cerrarSesionAdmin" layoutX="34.0" layoutY="628.0" mnemonicParsing="false" onAction="#btnCerrarSesionAdmin" prefHeight="32.0" prefWidth="128.0" style="-fx-border-radius: 30; -fx-border-color: black; -fx-background-color: #141587; -fx-background-radius: 30; -fx-border-width: 2;" text="CERRRAR SESION">
+               <textFill>
+                  <RadialGradient centerX="0.5" centerY="0.5" radius="0.5">
+                     <stops>
+                        <Stop>
+                           <color>
+                              <Color red="1.0" green="1.0" blue="1.0" />
+                           </color>
+                        </Stop>
+                        <Stop offset="1.0">
+                           <color>
+                              <Color red="1.0" green="1.0" blue="1.0" />
+                           </color>
+                        </Stop>
+                     </stops>
+                  </RadialGradient>
+               </textFill>
+            </Button>
+            <Button layoutX="335.0" layoutY="22.0" mnemonicParsing="false" prefHeight="32.0" prefWidth="166.0" style="-fx-border-radius: 30; -fx-border-color: black; -fx-background-color: #141587; -fx-background-radius: 30; -fx-border-width: 2;" text="UBICACION EQUIPOS">
+               <textFill>
+                  <RadialGradient centerX="0.5" centerY="0.5" radius="0.5">
+                     <stops>
+                        <Stop>
+                           <color>
+                              <Color red="1.0" green="1.0" blue="1.0" />
+                           </color>
+                        </Stop>
+                        <Stop offset="1.0">
+                           <color>
+                              <Color red="1.0" green="1.0" blue="1.0" />
+                           </color>
+                        </Stop>
+                     </stops>
+                  </RadialGradient>
+               </textFill>
+            </Button>
+         </children>
+      </AnchorPane>
+      <AnchorPane fx:id="PaneInicio" layoutX="-5.0" layoutY="39.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="684.0" prefWidth="1257.0" style="-fx-background-color: #02032d; -fx-border-color: black;">
+         <children>
+            <TextField layoutX="398.0" layoutY="30.0" prefHeight="27.0" prefWidth="251.0" style="-fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-radius: 30;" />
+            <Text fill="WHITE" layoutX="434.0" layoutY="48.0" strokeType="OUTSIDE" strokeWidth="0.0" text="DESASTRE NATURAL DETECTADO" textAlignment="CENTER" />
+            <Button layoutX="669.0" layoutY="29.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="31.0" style="-fx-border-radius: 30; -fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-width: 2;" text="¡" textFill="WHITE" />
+            <Button fx:id="simulacro" layoutX="1102.0" layoutY="29.0" mnemonicParsing="false" onAction="#btnSimulacro" prefHeight="30.0" prefWidth="110.0" style="-fx-border-radius: 30; -fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-width: 2;" text="SIMULACRO" textFill="WHITE" />
+            <Button fx:id="recursosInicio" layoutX="86.0" layoutY="617.0" mnemonicParsing="false" onAction="#btnRecursosInicio" prefHeight="30.0" prefWidth="104.0" style="-fx-border-radius: 30; -fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-width: 2;" text="RECURSOS" textFill="WHITE" />
+            <Button fx:id="equiposAdmin" layoutX="204.0" layoutY="617.0" mnemonicParsing="false" onAction="#btnEquiposInicio" prefHeight="30.0" prefWidth="110.0" style="-fx-border-radius: 30; -fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-width: 2;" text="EQUIPOS" textFill="WHITE" />
+         </children>
+      </AnchorPane>
+      <AnchorPane fx:id="PaneRutas" layoutX="-3.0" layoutY="42.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="678.0" prefWidth="1257.0" style="-fx-background-color: #02032d; -fx-border-color: black;" visible="false">
+         <children>
+            <TextField layoutX="859.0" layoutY="151.0" prefHeight="27.0" prefWidth="296.0" style="-fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-radius: 30;" />
+            <Text fill="WHITE" layoutX="936.0" layoutY="169.0" strokeType="OUTSIDE" strokeWidth="0.0" text="PLANIFICACION DE RUTAS" textAlignment="JUSTIFY" />
+            <AnchorPane layoutX="834.0" layoutY="196.0" prefHeight="179.0" prefWidth="346.0" style="-fx-background-color: #141587; -fx-border-radius: 30; -fx-background-radius: 30;">
+               <children>
+                  <TextField layoutX="20.0" layoutY="39.0" prefHeight="27.0" prefWidth="128.0" style="-fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-radius: 30;" />
+                  <TextField layoutX="21.0" layoutY="79.0" prefHeight="27.0" prefWidth="128.0" style="-fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-radius: 30;" />
+                  <TextField layoutX="21.0" layoutY="122.0" prefHeight="27.0" prefWidth="128.0" style="-fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-radius: 30;" />
+                  <Text fill="WHITE" layoutX="58.0" layoutY="57.0" strokeType="OUTSIDE" strokeWidth="0.0" text="EQUIPO 1" />
+                  <Text fill="WHITE" layoutX="58.0" layoutY="97.0" strokeType="OUTSIDE" strokeWidth="0.0" text="EQUIPO 2" />
+                  <Text fill="WHITE" layoutX="62.0" layoutY="140.0" strokeType="OUTSIDE" strokeWidth="0.0" text="EQUIPO 3" />
+                  <TextField layoutX="197.0" layoutY="39.0" prefHeight="27.0" prefWidth="112.0" style="-fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-radius: 30;" />
+                  <TextField layoutX="197.0" layoutY="79.0" prefHeight="27.0" prefWidth="112.0" style="-fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-radius: 30;" />
+                  <TextField layoutX="197.0" layoutY="122.0" prefHeight="27.0" prefWidth="112.0" style="-fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-radius: 30;" />
+               </children>
+            </AnchorPane>
+            <Button layoutX="271.0" layoutY="14.0" mnemonicParsing="false" prefHeight="32.0" prefWidth="278.0" style="-fx-border-radius: 30; -fx-border-color: black; -fx-background-color: #141587; -fx-background-radius: 30; -fx-border-width: 2;" text="VISUALIZACION DE RUTAS">
+               <textFill>
+                  <RadialGradient centerX="0.5" centerY="0.5" radius="0.5">
+                     <stops>
+                        <Stop>
+                           <color>
+                              <Color red="1.0" green="1.0" blue="1.0" />
+                           </color>
+                        </Stop>
+                        <Stop offset="1.0">
+                           <color>
+                              <Color red="1.0" green="1.0" blue="1.0" />
+                           </color>
+                        </Stop>
+                     </stops>
+                  </RadialGradient>
+               </textFill>
+            </Button>
+            <Button fx:id="actualizarRutas" layoutX="851.0" layoutY="450.0" mnemonicParsing="false" onAction="#btnActualizarRutas" prefHeight="32.0" prefWidth="128.0" style="-fx-border-radius: 30; -fx-border-color: black; -fx-background-color: #141587; -fx-background-radius: 30; -fx-border-width: 2;" text="ACTUALIZAR RUTAS">
+               <textFill>
+                  <RadialGradient centerX="0.5" centerY="0.5" radius="0.5">
+                     <stops>
+                        <Stop>
+                           <color>
+                              <Color red="1.0" green="1.0" blue="1.0" />
+                           </color>
+                        </Stop>
+                        <Stop offset="1.0">
+                           <color>
+                              <Color red="1.0" green="1.0" blue="1.0" />
+                           </color>
+                        </Stop>
+                     </stops>
+                  </RadialGradient>
+               </textFill>
+            </Button>
+            <Button fx:id="agregarRuta" layoutX="1052.0" layoutY="450.0" mnemonicParsing="false" onAction="#btnAgregarRuta" prefHeight="32.0" prefWidth="128.0" style="-fx-border-radius: 30; -fx-border-color: black; -fx-background-color: #141587; -fx-background-radius: 30; -fx-border-width: 2;" text="AGREGAR RUTA">
+               <textFill>
+                  <RadialGradient centerX="0.5" centerY="0.5" radius="0.5">
+                     <stops>
+                        <Stop>
+                           <color>
+                              <Color red="1.0" green="1.0" blue="1.0" />
+                           </color>
+                        </Stop>
+                        <Stop offset="1.0">
+                           <color>
+                              <Color red="1.0" green="1.0" blue="1.0" />
+                           </color>
+                        </Stop>
+                     </stops>
+                  </RadialGradient>
+               </textFill>
+            </Button>
+         </children>
+      </AnchorPane>
+      <AnchorPane fx:id="PaneEstads" layoutX="-2.0" layoutY="38.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="678.0" prefWidth="1257.0" style="-fx-background-color: #02032d; -fx-border-color: black;" visible="false">
+         <children>
+            <TextField layoutX="872.0" layoutY="72.0" prefHeight="27.0" prefWidth="296.0" style="-fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-radius: 30;" />
+            <Text fill="WHITE" layoutX="955.0" layoutY="91.0" strokeType="OUTSIDE" strokeWidth="0.0" text="AVANCE DE EVACUACIONES" textAlignment="JUSTIFY" />
+            <Button fx:id="ActualizarRecursosDistribuidos" layoutX="79.0" layoutY="560.0" mnemonicParsing="false" onAction="#btnActualizarRecursosDistribuidos" prefHeight="32.0" prefWidth="128.0" style="-fx-border-radius: 30; -fx-border-color: black; -fx-background-color: #141587; -fx-background-radius: 30; -fx-border-width: 2;" text="Actualizar">
+               <textFill>
+                  <RadialGradient centerX="0.5" centerY="0.5" radius="0.5">
+                     <stops>
+                        <Stop>
+                           <color>
+                              <Color red="1.0" green="1.0" blue="1.0" />
+                           </color>
+                        </Stop>
+                        <Stop offset="1.0">
+                           <color>
+                              <Color red="1.0" green="1.0" blue="1.0" />
+                           </color>
+                        </Stop>
+                     </stops>
+                  </RadialGradient>
+               </textFill>
+            </Button>
+            <Button layoutX="120.0" layoutY="87.0" mnemonicParsing="false" prefHeight="32.0" prefWidth="278.0" style="-fx-border-radius: 30; -fx-border-color: black; -fx-background-color: #141587; -fx-background-radius: 30; -fx-border-width: 2;" text="RECURSOS DISTRIBUIDOS">
+               <textFill>
+                  <RadialGradient centerX="0.5" centerY="0.5" radius="0.5">
+                     <stops>
+                        <Stop>
+                           <color>
+                              <Color red="1.0" green="1.0" blue="1.0" />
+                           </color>
+                        </Stop>
+                        <Stop offset="1.0">
+                           <color>
+                              <Color red="1.0" green="1.0" blue="1.0" />
+                           </color>
+                        </Stop>
+                     </stops>
+                  </RadialGradient>
+               </textFill>
+            </Button>
+            <Button layoutX="276.0" layoutY="560.0" mnemonicParsing="false" prefHeight="32.0" prefWidth="128.0" style="-fx-border-radius: 30; -fx-border-color: black; -fx-background-color: #141587; -fx-background-radius: 30; -fx-border-width: 2;" text="ACTUALIZAR RUTAS">
+               <textFill>
+                  <RadialGradient centerX="0.5" centerY="0.5" radius="0.5">
+                     <stops>
+                        <Stop>
+                           <color>
+                              <Color red="1.0" green="1.0" blue="1.0" />
+                           </color>
+                        </Stop>
+                        <Stop offset="1.0">
+                           <color>
+                              <Color red="1.0" green="1.0" blue="1.0" />
+                           </color>
+                        </Stop>
+                     </stops>
+                  </RadialGradient>
+               </textFill>
+            </Button>
+            <Button layoutX="860.0" layoutY="544.0" mnemonicParsing="false" prefHeight="32.0" prefWidth="128.0" style="-fx-border-radius: 30; -fx-border-color: black; -fx-background-color: #141587; -fx-background-radius: 30; -fx-border-width: 2;" text="AGREGAR RUTA">
+               <textFill>
+                  <RadialGradient centerX="0.5" centerY="0.5" radius="0.5">
+                     <stops>
+                        <Stop>
+                           <color>
+                              <Color red="1.0" green="1.0" blue="1.0" />
+                           </color>
+                        </Stop>
+                        <Stop offset="1.0">
+                           <color>
+                              <Color red="1.0" green="1.0" blue="1.0" />
+                           </color>
+                        </Stop>
+                     </stops>
+                  </RadialGradient>
+               </textFill>
+            </Button>
+            <PieChart fx:id="graficoRecursosDistribuidos" layoutX="64.0" layoutY="142.0" prefHeight="400.0" prefWidth="382.0" style="-fx-background-color: white;" />
+            <PieChart fx:id="graficoAvanceRecursos" layoutX="834.0" layoutY="131.0" prefHeight="400.0" prefWidth="371.0" style="-fx-background-color: white;" />
+            <Button fx:id="actualizarAvanceEvacuaciones" layoutX="1043.0" layoutY="544.0" mnemonicParsing="false" onAction="#btnActualizarAvanceEvacuaciones" prefHeight="32.0" prefWidth="128.0" style="-fx-border-radius: 30; -fx-border-color: black; -fx-background-color: #141587; -fx-background-radius: 30; -fx-border-width: 2;" text="Actualizar">
+               <textFill>
+                  <RadialGradient centerX="0.5" centerY="0.5" radius="0.5">
+                     <stops>
+                        <Stop>
+                           <color>
+                              <Color red="1.0" green="1.0" blue="1.0" />
+                           </color>
+                        </Stop>
+                        <Stop offset="1.0">
+                           <color>
+                              <Color red="1.0" green="1.0" blue="1.0" />
+                           </color>
+                        </Stop>
+                     </stops>
+                  </RadialGradient>
+               </textFill>
+            </Button>
+         </children>
+      </AnchorPane>
+      <Pane fx:id="paneMapa" layoutX="24.0" layoutY="121.0" prefHeight="519.0" prefWidth="748.0" />
    </children>
 </AnchorPane>
