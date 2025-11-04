@@ -51,28 +51,30 @@ public class SistemaGestionDesastres {
     public void agregarEvacuacion(Evacuacion e) { evacuaciones.add(e); }
 
     //APARTADO REGISTRO Y AUTENTIFICACION
-    public boolean registrarAdmin(String nombre, String id) {
+    public boolean registrarAdmin(String nombre, String clave) {
         for (Admin a : administradores) {
             if (a.getNombre().equalsIgnoreCase(nombre)) {
                 return false;
             }
         }
-        administradores.add(new Admin(nombre, id));
+        administradores.add(new Admin(nombre, clave));
         return true;
     }
 
-    public boolean registrarOperador(String nombre, String id) {
+    public boolean registrarOperador(String nombre, String clave) {
         for (OperadorEmergencia o : operadores) {
             if (o.getNombre().equalsIgnoreCase(nombre)) {
                 return false;
             }
         }
-        operadores.add(new OperadorEmergencia(nombre, id));
+        operadores.add(new OperadorEmergencia(nombre, clave));
         return true;
     }
 
-    public String autenticar(String nombre, String id) {
+    public String autenticar(String nombre, String clave) {
+        System.out.println(nombre);
         for (Admin a : administradores) {
+            System.out.println(a.getId());
             if (a.getNombre().equalsIgnoreCase(nombre)) {
                 return "ADMIN";
             }
@@ -198,9 +200,9 @@ public class SistemaGestionDesastres {
         s.agregarEvacuacion(ev);
 
 
-        s.agregarOperador(new OperadorEmergencia("Operador 1", "OP-01"));
-        s.agregarOperador(new OperadorEmergencia("Operador 2", "OP-02"));
-        s.agregarAdmin(new Admin("Admin SGDN", "AD-01"));
+        s.agregarOperador(new OperadorEmergencia("Op1", "1234"));
+        s.agregarOperador(new OperadorEmergencia("Op2", "1234"));
+        s.agregarAdmin(new Admin("Admin","1234"));
         return s;
     }
 }

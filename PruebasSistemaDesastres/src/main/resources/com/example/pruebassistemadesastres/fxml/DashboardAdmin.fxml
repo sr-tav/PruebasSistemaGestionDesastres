@@ -377,6 +377,6 @@
             </Button>
          </children>
       </AnchorPane>
-      <Pane fx:id="paneMapa" layoutX="24.0" layoutY="121.0" prefHeight="519.0" prefWidth="748.0" />
+      <Pane fx:id="paneMapa" layoutX="-4.0" layoutY="115.0" prefHeight="536.0" prefWidth="1257.0" />
    </children>
 </AnchorPane>

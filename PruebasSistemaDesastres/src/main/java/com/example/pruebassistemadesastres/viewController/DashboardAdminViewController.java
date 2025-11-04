@@ -1,5 +1,6 @@
 package com.example.pruebassistemadesastres.viewController;
 
+import com.example.pruebassistemadesastres.model.SistemaGestionDesastres;
 import com.sothawo.mapjfx.*;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -13,7 +14,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
 
 public class DashboardAdminViewController {
-
+    private SistemaGestionDesastres sistemaGestionDesastres;
     @FXML private Pane paneMapa;
 
     private MapView mapView;
@@ -174,7 +175,7 @@ public class DashboardAdminViewController {
         PaneRutas.setVisible(false);
         PaneEstads.setVisible(false);
         PaneAdmin.setVisible(false);
-        paneMapa.setPrefWidth(1250);
+        paneMapa.setPrefWidth(1257);
         paneMapa.setPrefHeight(536);
     }
 
@@ -271,5 +272,13 @@ public class DashboardAdminViewController {
         mapView.addMapCircle(zonaModerada);
         mapView.addMapCircle(zonaEstable);
         mapView.addLabel(lblCalarca);
+    }
+
+    public SistemaGestionDesastres getSistemaGestionDesastres() {
+        return sistemaGestionDesastres;
+    }
+
+    public void setSistemaGestionDesastres(SistemaGestionDesastres sistemaGestionDesastres) {
+        this.sistemaGestionDesastres = sistemaGestionDesastres;
     }
 }

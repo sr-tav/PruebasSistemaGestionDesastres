@@ -7,4 +7,5 @@ public class Persona extends EntidadBase{
         this.nombre = nombre;
     }
     public String getNombre() { return nombre; }
+
 }

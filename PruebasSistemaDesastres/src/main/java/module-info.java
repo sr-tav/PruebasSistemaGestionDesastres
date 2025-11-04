@@ -4,6 +4,8 @@ module com.example.pruebassistemadesastres {
     requires javafx.web;
     requires javafx.media;
     requires com.sothawo.mapjfx;
+    requires java.desktop;
+    requires javafx.graphics;
 
     opens com.example.pruebassistemadesastres to javafx.fxml;
     opens com.example.pruebassistemadesastres.viewController to javafx.fxml;
