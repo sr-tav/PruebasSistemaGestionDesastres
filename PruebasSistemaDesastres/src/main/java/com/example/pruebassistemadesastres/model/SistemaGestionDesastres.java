@@ -140,14 +140,41 @@ public class SistemaGestionDesastres {
         Municipio armenia = new Municipio("Armenia", 295000);
 
 
-        Zona zCiudad = new Zona("Ciudad Calarcá", TipoZona.CIUDAD, calarca, 50000, 4);
-        Zona zRefugio = new Zona("Refugio La María", TipoZona.REFUGIO, calarca, 1200, 2);
-        Zona zCentro = new Zona("Centro de Ayuda Caficultor", TipoZona.CENTRO_AYUDA, armenia, 0, 1);
-        Zona zHospital = new Zona("Hospital San José", TipoZona.CENTRO_AYUDA, calarca, 0, 1);
-
-
+        Zona zCiudad = new Zona("Ciudad Calarcá", TipoZona.CIUDAD, calarca, 50000, 4, 4.533338, -75.640813);
+        Zona zRefugio = new Zona("Refugio La María", TipoZona.REFUGIO, calarca, 1200, 2, 4.533338, -75.640813);
+        Zona zCentro = new Zona("Centro de Ayuda Caficultor", TipoZona.CENTRO_AYUDA, armenia, 0, 1,4.533338, -75.640813);
+        Zona zHospital = new Zona("Hospital San José", TipoZona.CENTRO_AYUDA, calarca, 0, 1, 4.533338, -75.640813);
         s.agregarZona(zCiudad); s.agregarZona(zRefugio); s.agregarZona(zCentro); s.agregarZona(zHospital);
 
+        //ZONA CALARCA
+        Zona zRefugioCal = new Zona("Refugio La María Cal", TipoZona.REFUGIO, calarca, 1200, 2,
+                4.5290, -75.6430);
+        Zona zCentroCal = new Zona("Centro de Ayuda Caficultor Cal", TipoZona.CENTRO_AYUDA, armenia, 0, 1,
+                4.533338, -75.640813);
+        Zona zHospitalCal = new Zona("Hospital La Misericordia Cal", TipoZona.CENTRO_AYUDA, calarca, 0, 1,
+                4.53331, -75.64087);
+        Zona zBomberos = new Zona("Cuerpo de Bomberos Calarcá", TipoZona.CENTRO_AYUDA, calarca, 0, 2,
+                4.52905, -75.63691);
+        Zona zColegio = new Zona("Institución Educativa San Bernardo Cal", TipoZona.REFUGIO, calarca, 800, 3,
+                4.5265, -75.6470);
+        Zona zParque = new Zona("Parque Fundadores Cal", TipoZona.REFUGIO, calarca, 300, 1,
+                4.522715154365355, -75.64573160595077);
+
+        s.agregarZona(zRefugioCal);
+        s.agregarZona(zCentroCal);
+        s.agregarZona(zHospitalCal);
+        s.agregarZona(zBomberos);
+        s.agregarZona(zColegio);
+        s.agregarZona(zParque);
+
+        //Grafo
+        s.getGrafo().conectar(zCiudad, zHospitalCal, 1.2, true, 10);
+        s.getGrafo().conectar(zCiudad, zRefugioCal, 1.1, false, 8);
+        s.getGrafo().conectar(zHospitalCal, zRefugioCal, 0.9, true, 9);
+        s.getGrafo().conectar(zCiudad, zBomberos, 1.4, true, 10);
+        s.getGrafo().conectar(zBomberos, zColegio, 2.0, true, 8);
+        s.getGrafo().conectar(zColegio, zParque, 1.8, true, 7);
+        s.getGrafo().conectar(zParque, zCentroCal, 2.5, true, 12);
 
         zCiudad.getInventario().put(TipoRecurso.AGUA, 6000);
         zCiudad.getInventario().put(TipoRecurso.ALIMENTO, 4000);
