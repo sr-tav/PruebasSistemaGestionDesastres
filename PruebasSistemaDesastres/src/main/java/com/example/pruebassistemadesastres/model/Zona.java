@@ -14,14 +14,18 @@ public class Zona extends EntidadBase{
     private final Map<TipoRecurso, Integer> inventario = new EnumMap<>(TipoRecurso.class);
     private final List<Rescatista> rescatistas = new ArrayList<>();
     private final List<Equipo> equipos = new ArrayList<>();
+    private double latitud;
+    private double altitud;
 
 
-    public Zona(String nombre, TipoZona tipo, Municipio municipio, int habitantes, int nivelRiesgo) {
+    public Zona(String nombre, TipoZona tipo, Municipio municipio, int habitantes, int nivelRiesgo, double latitud, double altitud) {
         this.nombre = nombre;
         this.tipo = tipo;
         this.municipio = municipio;
         this.habitantes = habitantes;
         this.nivelRiesgo = nivelRiesgo;
+        this.latitud = latitud;
+        this.altitud = altitud;
     }
 
     public String getNombre() { return nombre; }
@@ -34,4 +38,8 @@ public class Zona extends EntidadBase{
     public Map<TipoRecurso,Integer> getInventario() { return inventario; }
     public List<Rescatista> getRescatistas() { return rescatistas; }
     public List<Equipo> getEquipos() { return equipos; }
+    public double getLatitud() { return latitud; }
+    public void setLatitud(double latitud) { this.latitud = latitud; }
+    public double getAltitud() { return altitud; }
+    public void setAltitud(double altitud) { this.altitud = altitud; }
 }
