@@ -1,5 +1,6 @@
 package com.example.pruebassistemadesastres.viewController;
 
+import com.example.pruebassistemadesastres.model.ServicioRutas;
 import com.example.pruebassistemadesastres.model.SistemaGestionDesastres;
 import com.sothawo.mapjfx.*;
 import javafx.application.Platform;
@@ -12,6 +13,8 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
+
+import java.util.List;
 
 public class DashboardAdminViewController {
     private SistemaGestionDesastres sistemaGestionDesastres;
@@ -89,6 +92,43 @@ public class DashboardAdminViewController {
     private TableView<?> tablaGestionInventario;
 
     @FXML
+    private void initialize() {
+        mapView = new MapView();
+        mapView.setMapType(MapType.OSM);
+        mapView.setMaxSize(1920, 1080);     // o 2560x1440 si necesitas más
+        paneMapa.setMaxSize(1920, 1080);
+        mapView.setMinSize(2, 2);
+        paneMapa.setMinSize(2, 2);
+
+        paneMapa.getChildren().add(mapView);
+        mapView.setPrefSize(Region.USE_COMPUTED_SIZE, Region.USE_COMPUTED_SIZE);
+        mapView.prefWidthProperty().bind(paneMapa.widthProperty());
+        mapView.prefHeightProperty().bind(paneMapa.heightProperty());
+
+        // Inicializa el MapView
+        mapView.initialize();
+
+        // Cuando el mapa esté listo, configura y añade overlays
+        mapView.initializedProperty().addListener((obs, was, ready) -> {
+            if (ready) {
+                configurarCentro();
+                crearOverlays();
+
+                // Añadirlos justo después del primer render
+                Platform.runLater(this::agregarOverlaysAlMapa);
+                // >>> Pinta la ruta real respetando carreteras <<<
+                Coordinate desastre = new Coordinate(4.53242, -75.64957);
+                Coordinate hospital = new Coordinate(4.533338, -75.640813);
+                com.example.pruebassistemadesastres.model.ServicioRutas.dibujarRutaCarretera(
+                        mapView,
+                        java.util.List.of(hospital, desastre),
+                        true // limpiarPrevias
+                );
+            }
+        });
+    }
+
+    @FXML
     void btnActualizarAvanceEvacuaciones(ActionEvent event) {
 
     }
@@ -150,7 +190,7 @@ public class DashboardAdminViewController {
 
     @FXML
     void clickAdmin(ActionEvent event) {
-        paneMapa.setVisible(true);
+        paneMapa.toFront();
         PaneInicio.setVisible(false);
         PaneRutas.setVisible(false);
         PaneEstads.setVisible(false);
@@ -165,12 +205,12 @@ public class DashboardAdminViewController {
         PaneRutas.setVisible(false);
         PaneEstads.setVisible(true);
         PaneAdmin.setVisible(false);
-        paneMapa.setVisible(false);
+        paneMapa.toBack();
     }
 
     @FXML
     void clickInicio(ActionEvent event) {
-        paneMapa.setVisible(true);
+        paneMapa.toFront();
         PaneInicio.setVisible(true);
         PaneRutas.setVisible(false);
         PaneEstads.setVisible(false);
@@ -181,7 +221,7 @@ public class DashboardAdminViewController {
 
     @FXML
     void clickRutas(ActionEvent event) {
-        paneMapa.setVisible(true);
+        paneMapa.toFront();
         PaneInicio.setVisible(false);
         PaneRutas.setVisible(true);
         PaneEstads.setVisible(false);
@@ -199,30 +239,7 @@ public class DashboardAdminViewController {
     private MapCircle zonaEstable;
     private MapLabel lblCalarca;
 
-    @FXML
-    private void initialize() {
-        mapView = new MapView();
-        mapView.setMapType(MapType.OSM);
 
-        paneMapa.getChildren().add(mapView);
-        mapView.setPrefSize(Region.USE_COMPUTED_SIZE, Region.USE_COMPUTED_SIZE);
-        mapView.prefWidthProperty().bind(paneMapa.widthProperty());
-        mapView.prefHeightProperty().bind(paneMapa.heightProperty());
-
-        // Inicializa el MapView
-        mapView.initialize();
-
-        // Cuando el mapa esté listo, configura y añade overlays
-        mapView.initializedProperty().addListener((obs, was, ready) -> {
-            if (ready) {
-                configurarCentro();
-                crearOverlays();
-
-                // Añadirlos justo después del primer render
-                Platform.runLater(this::agregarOverlaysAlMapa);
-            }
-        });
-    }
 
     private void configurarCentro() {
         Coordinate calarca = new Coordinate(4.5333, -75.6500);
@@ -243,10 +260,6 @@ public class DashboardAdminViewController {
                 .setPosition(hospital)
                 .setVisible(true);
 
-        ruta = new CoordinateLine(desastre, hospital)
-                .setColor(Color.ORANGE)
-                .setWidth(4)
-                .setVisible(true);
 
         zonaCritica = new MapCircle(desastre, 250)
                 .setFillColor(Color.color(1, 0, 0.0, 0.5))
@@ -261,17 +274,22 @@ public class DashboardAdminViewController {
         lblCalarca = new MapLabel("DesastreNaturalRandom")
                 .setPosition(desastre)
                 .setVisible(true);
+
     }
 
     private void agregarOverlaysAlMapa() {
         // Re-agrega por si el WebView hizo un refresh de capas
         mapView.addMarker(mDesastre);
         mapView.addMarker(mHospital);
-        mapView.addCoordinateLine(ruta);
         mapView.addMapCircle(zonaCritica);
         mapView.addMapCircle(zonaModerada);
         mapView.addMapCircle(zonaEstable);
         mapView.addLabel(lblCalarca);
+        ServicioRutas.dibujarRutaCarretera(
+                mapView,
+                List.of(mDesastre.getPosition(), mHospital.getPosition()),
+                /*limpiarPrevias*/ true
+        );
     }
 
     public SistemaGestionDesastres getSistemaGestionDesastres() {
