@@ -1,9 +1,6 @@
 package com.example.pruebassistemadesastres.viewController;
 
-import com.example.pruebassistemadesastres.model.Municipio;
-import com.example.pruebassistemadesastres.model.ServicioRutas;
-import com.example.pruebassistemadesastres.model.SistemaGestionDesastres;
-import com.example.pruebassistemadesastres.model.Zona;
+import com.example.pruebassistemadesastres.model.*;
 import com.sothawo.mapjfx.*;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -320,12 +317,11 @@ public class DashboardAdminViewController {
     private final List<Marker> marcadoresMunicipio = new ArrayList<>();
 
     private void mostrarMarcadoresMunicipio(Municipio municipio) {
-
+        // Limpiar marcadores previos
         for (Marker m : marcadoresMunicipio) {
             mapView.removeMarker(m);
         }
         marcadoresMunicipio.clear();
-
 
         List<Zona> zonasMunicipio = sistemaGestionDesastres.getZonas().stream()
                 .filter(z -> z.getMunicipio().equals(municipio))
@@ -345,7 +341,6 @@ public class DashboardAdminViewController {
             marcadoresMunicipio.add(marcador);
         }
     }
-
 
     private void inicializarCombos() {
         if (sistemaGestionDesastres == null) return;
@@ -374,7 +369,6 @@ public class DashboardAdminViewController {
 
             mostrarMarcadoresMunicipio(seleccionado);
 
-
             List<Zona> zonasMunicipio = sistemaGestionDesastres.getZonas().stream()
                     .filter(z -> z.getMunicipio().equals(seleccionado))
                     .toList();
@@ -394,13 +388,20 @@ public class DashboardAdminViewController {
             return;
         }
 
-        Coordinate coordInicio = new Coordinate(inicio.getLatitud(), inicio.getAltitud());
-        Coordinate coordDestino = new Coordinate(destino.getLatitud(), destino.getAltitud());
+        Ruta ruta = sistemaGestionDesastres.getGrafo().calcularRutaMasCorta(inicio, destino);
+        if (ruta == null) {
+            System.out.println("No hay ruta disponible entre estas zonas.");
+            return;
+        }
 
-        ServicioRutas.dibujarRutaCarretera(mapView, List.of(coordInicio, coordDestino), true);
+        List<Coordinate> coordsRuta = ruta.getParadas().stream()
+                .map(z -> new Coordinate(z.getLatitud(), z.getAltitud()))
+                .toList();
 
-        double latCentro = (coordInicio.getLatitude() + coordDestino.getLatitude()) / 2;
-        double lonCentro = (coordInicio.getLongitude() + coordDestino.getLongitude()) / 2;
+        ServicioRutas.dibujarRutaCarretera(mapView, coordsRuta, true);
+        
+        double latCentro = coordsRuta.stream().mapToDouble(Coordinate::getLatitude).average().orElse(0);
+        double lonCentro = coordsRuta.stream().mapToDouble(Coordinate::getLongitude).average().orElse(0);
         mapView.setCenter(new Coordinate(latCentro, lonCentro));
         mapView.setZoom(14);
     }

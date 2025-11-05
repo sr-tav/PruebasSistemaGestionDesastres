@@ -176,6 +176,29 @@ public class SistemaGestionDesastres {
         s.getGrafo().conectar(zColegio, zParque, 1.8, true, 7);
         s.getGrafo().conectar(zParque, zCentroCal, 2.5, true, 12);
 
+        //ZONA ARMENIA
+        Zona zCentroArmenia = new Zona("Centro Armenia", TipoZona.CIUDAD, armenia, 100000, 4, 4.5386, -75.6755);
+        Zona zRefugioArmenia = new Zona("Refugio La Floresta", TipoZona.REFUGIO, armenia, 2000, 2, 4.5460, -75.6820);
+        Zona zHospitalArmenia = new Zona("Hospital San Roque", TipoZona.CENTRO_AYUDA, armenia, 0, 1, 4.5340, -75.6770);
+        Zona zCentroAyudaArmenia = new Zona("Centro de Ayuda Caficultor", TipoZona.CENTRO_AYUDA, armenia, 0, 1, 4.5400, -75.6800);
+        Zona zParqueArmenia = new Zona("Parque Sucre", TipoZona.REFUGIO, armenia, 500, 2, 4.5390, -75.6765);
+
+        // Añadir zonas al sistema
+        s.agregarZona(zCentroArmenia);
+        s.agregarZona(zRefugioArmenia);
+        s.agregarZona(zHospitalArmenia);
+        s.agregarZona(zCentroAyudaArmenia);
+        s.agregarZona(zParqueArmenia);
+
+        //GRAFO
+        s.getGrafo().conectar(zCentroArmenia, zHospitalArmenia, 3.2, true, 10);
+        s.getGrafo().conectar(zCentroArmenia, zRefugioArmenia, 5.0, true, 8);
+        s.getGrafo().conectar(zHospitalArmenia, zRefugioArmenia, 2.5, true, 6);
+        s.getGrafo().conectar(zCentroAyudaArmenia, zCentroArmenia, 4.5, true, 12);
+        s.getGrafo().conectar(zCentroAyudaArmenia, zHospitalArmenia, 3.8, true, 9);
+        s.getGrafo().conectar(zParqueArmenia, zCentroArmenia, 1.2, true, 5);
+        s.getGrafo().conectar(zParqueArmenia, zHospitalArmenia, 2.0, true, 6);
+
         zCiudad.getInventario().put(TipoRecurso.AGUA, 6000);
         zCiudad.getInventario().put(TipoRecurso.ALIMENTO, 4000);
         zRefugio.getInventario().put(TipoRecurso.ALIMENTO, 1500);
