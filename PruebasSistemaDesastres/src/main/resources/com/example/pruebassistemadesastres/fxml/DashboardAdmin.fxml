@@ -197,7 +197,7 @@
             </Button>
          </children>
       </AnchorPane>
-      <AnchorPane fx:id="PaneInicio" layoutX="-5.0" layoutY="39.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="684.0" prefWidth="1257.0" style="-fx-background-color: #02032d; -fx-border-color: black;">
+      <AnchorPane fx:id="PaneInicio" layoutX="-5.0" layoutY="39.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="684.0" prefWidth="1257.0" style="-fx-background-color: #02032d; -fx-border-color: black;" visible="false">
          <children>
             <TextField layoutX="398.0" layoutY="30.0" prefHeight="27.0" prefWidth="251.0" style="-fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-radius: 30;" />
             <Text fill="WHITE" layoutX="434.0" layoutY="48.0" strokeType="OUTSIDE" strokeWidth="0.0" text="DESASTRE NATURAL DETECTADO" textAlignment="CENTER" />
@@ -207,7 +207,7 @@
             <Button fx:id="equiposAdmin" layoutX="204.0" layoutY="617.0" mnemonicParsing="false" onAction="#btnEquiposInicio" prefHeight="30.0" prefWidth="110.0" style="-fx-border-radius: 30; -fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-width: 2;" text="EQUIPOS" textFill="WHITE" />
          </children>
       </AnchorPane>
-      <AnchorPane fx:id="PaneRutas" layoutX="-3.0" layoutY="42.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="678.0" prefWidth="1257.0" style="-fx-background-color: #02032d; -fx-border-color: black;" visible="false">
+      <AnchorPane fx:id="PaneRutas" layoutX="-3.0" layoutY="42.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="678.0" prefWidth="1257.0" style="-fx-background-color: #02032d; -fx-border-color: black;">
          <children>
             <Button layoutX="208.0" layoutY="34.0" mnemonicParsing="false" prefHeight="32.0" prefWidth="278.0" style="-fx-border-radius: 30; -fx-border-color: black; -fx-background-color: #141587; -fx-background-radius: 30; -fx-border-width: 2;" text="VISUALIZACION DE RUTAS">
                <textFill>
@@ -267,7 +267,7 @@
             <ComboBox fx:id="comboMunicipio" layoutX="842.0" layoutY="375.0" prefHeight="16.0" prefWidth="128.0" promptText="Municipio" />
             <ComboBox fx:id="comboZonaInicio" layoutX="842.0" layoutY="432.0" prefHeight="16.0" prefWidth="128.0" promptText="Inicio" />
             <ComboBox fx:id="comboZonaFinal" layoutX="842.0" layoutY="489.0" prefHeight="16.0" prefWidth="128.0" promptText="Final" />
-            <Button fx:id="btnMostrarRuta" layoutX="1052.0" layoutY="432.0" mnemonicParsing="false" text="Mostrar ruta" />
+            <Button fx:id="btnMostrarRuta" layoutX="1052.0" layoutY="432.0" mnemonicParsing="false" onAction="#btnMostrarRutaAction" text="Mostrar ruta" />
             <AnchorPane layoutX="831.0" layoutY="111.0" prefHeight="179.0" prefWidth="346.0" style="-fx-background-color: #141587; -fx-border-radius: 30; -fx-background-radius: 30;">
                <children>
                   <TextField layoutX="20.0" layoutY="39.0" prefHeight="27.0" prefWidth="128.0" style="-fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-radius: 30;" />

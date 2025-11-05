@@ -6,6 +6,8 @@ import com.example.pruebassistemadesastres.model.SistemaGestionDesastres;
 import com.example.pruebassistemadesastres.model.Zona;
 import com.sothawo.mapjfx.*;
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.chart.PieChart;
@@ -16,6 +18,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
+import javafx.util.StringConverter;
 
 import java.util.List;
 
@@ -136,6 +139,7 @@ public class DashboardAdminViewController {
                         java.util.List.of(hospital, desastre),
                         true // limpiarPrevias
                 );
+                inicializarCombos();
             }
         });
     }
@@ -310,5 +314,59 @@ public class DashboardAdminViewController {
 
     public void setSistemaGestionDesastres(SistemaGestionDesastres sistemaGestionDesastres) {
         this.sistemaGestionDesastres = sistemaGestionDesastres;
+    }
+
+    private void inicializarCombos() {
+        if (sistemaGestionDesastres == null) return;
+
+        List<Municipio> municipios = sistemaGestionDesastres.getZonas().stream()
+                .map(Zona::getMunicipio)
+                .distinct()
+                .toList();
+
+        comboMunicipio.setItems(FXCollections.observableArrayList(municipios));
+        comboMunicipio.setConverter(new StringConverter<>() {
+            @Override public String toString(Municipio m) { return m == null ? "" : m.getNombre(); }
+            @Override public Municipio fromString(String s) { return null; }
+        });
+
+        StringConverter<Zona> zonaConverter = new StringConverter<>() {
+            @Override public String toString(Zona z) { return z == null ? "" : z.getNombre(); }
+            @Override public Zona fromString(String s) { return null; }
+        };
+        comboZonaInicio.setConverter(zonaConverter);
+        comboZonaFinal.setConverter(zonaConverter);
+
+        comboMunicipio.setOnAction(evt -> {
+            Municipio seleccionado = comboMunicipio.getSelectionModel().getSelectedItem();
+            if (seleccionado == null) return;
+            List<Zona> zonasMunicipio = sistemaGestionDesastres.getZonas().stream()
+                    .filter(z -> z.getMunicipio().equals(seleccionado))
+                    .toList();
+            ObservableList<Zona> obsZonas = FXCollections.observableArrayList(zonasMunicipio);
+            comboZonaInicio.setItems(obsZonas);
+            comboZonaFinal.setItems(obsZonas);
+        });
+    }
+
+    @FXML
+    private void btnMostrarRutaAction(ActionEvent event) {
+        Zona inicio = comboZonaInicio.getSelectionModel().getSelectedItem();
+        Zona destino = comboZonaFinal.getSelectionModel().getSelectedItem();
+
+        if (inicio == null || destino == null) {
+            System.out.println("Debes seleccionar una zona de inicio y una de destino.");
+            return;
+        }
+
+        Coordinate coordInicio = new Coordinate(inicio.getLatitud(), inicio.getAltitud());
+        Coordinate coordDestino = new Coordinate(destino.getLatitud(), destino.getAltitud());
+
+        ServicioRutas.dibujarRutaCarretera(mapView, List.of(coordInicio, coordDestino), true);
+
+        double latCentro = (coordInicio.getLatitude() + coordDestino.getLatitude()) / 2;
+        double lonCentro = (coordInicio.getLongitude() + coordDestino.getLongitude()) / 2;
+        mapView.setCenter(new Coordinate(latCentro, lonCentro));
+        mapView.setZoom(14);
     }
 }
