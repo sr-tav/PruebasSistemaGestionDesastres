@@ -1,13 +1,16 @@
 package com.example.pruebassistemadesastres.viewController;
 
+import com.example.pruebassistemadesastres.model.Municipio;
 import com.example.pruebassistemadesastres.model.ServicioRutas;
 import com.example.pruebassistemadesastres.model.SistemaGestionDesastres;
+import com.example.pruebassistemadesastres.model.Zona;
 import com.sothawo.mapjfx.*;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.chart.PieChart;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
@@ -90,6 +93,15 @@ public class DashboardAdminViewController {
 
     @FXML
     private TableView<?> tablaGestionInventario;
+
+    @FXML
+    private ComboBox<Municipio> comboMunicipio;
+    @FXML
+    private ComboBox<Zona> comboZonaInicio;
+    @FXML
+    private ComboBox<Zona> comboZonaFinal;
+    @FXML
+    private Button btnMostrarRuta;
 
     @FXML
     private void initialize() {
