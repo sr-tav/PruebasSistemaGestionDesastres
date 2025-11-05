@@ -20,6 +20,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
 import javafx.util.StringConverter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class DashboardAdminViewController {
@@ -316,6 +317,36 @@ public class DashboardAdminViewController {
         this.sistemaGestionDesastres = sistemaGestionDesastres;
     }
 
+    private final List<Marker> marcadoresMunicipio = new ArrayList<>();
+
+    private void mostrarMarcadoresMunicipio(Municipio municipio) {
+
+        for (Marker m : marcadoresMunicipio) {
+            mapView.removeMarker(m);
+        }
+        marcadoresMunicipio.clear();
+
+
+        List<Zona> zonasMunicipio = sistemaGestionDesastres.getZonas().stream()
+                .filter(z -> z.getMunicipio().equals(municipio))
+                .toList();
+
+        for (Zona z : zonasMunicipio) {
+            Marker marcador;
+            switch (z.getTipo()) {
+                case REFUGIO -> marcador = Marker.createProvided(Marker.Provided.RED);
+                case CENTRO_AYUDA -> marcador = Marker.createProvided(Marker.Provided.BLUE);
+                case CIUDAD -> marcador = Marker.createProvided(Marker.Provided.GREEN);
+                default -> marcador = null;
+            }
+            marcador.setPosition(new Coordinate(z.getLatitud(), z.getAltitud()));
+            marcador.setVisible(true);
+            mapView.addMarker(marcador);
+            marcadoresMunicipio.add(marcador);
+        }
+    }
+
+
     private void inicializarCombos() {
         if (sistemaGestionDesastres == null) return;
 
@@ -340,6 +371,10 @@ public class DashboardAdminViewController {
         comboMunicipio.setOnAction(evt -> {
             Municipio seleccionado = comboMunicipio.getSelectionModel().getSelectedItem();
             if (seleccionado == null) return;
+
+            mostrarMarcadoresMunicipio(seleccionado);
+
+
             List<Zona> zonasMunicipio = sistemaGestionDesastres.getZonas().stream()
                     .filter(z -> z.getMunicipio().equals(seleccionado))
                     .toList();
