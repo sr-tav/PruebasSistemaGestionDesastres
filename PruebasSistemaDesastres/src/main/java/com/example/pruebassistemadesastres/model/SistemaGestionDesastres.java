@@ -138,6 +138,7 @@ public class SistemaGestionDesastres {
 
         Municipio calarca = new Municipio("Calarcá", 75000);
         Municipio armenia = new Municipio("Armenia", 295000);
+        Municipio quimbaya = new Municipio("Quimbaya", 40000);
 
 
         Zona zCiudad = new Zona("Ciudad Calarcá", TipoZona.CIUDAD, calarca, 50000, 4, 4.533338, -75.640813);
@@ -198,6 +199,41 @@ public class SistemaGestionDesastres {
         s.getGrafo().conectar(zCentroAyudaArmenia, zHospitalArmenia, 3.8, true, 9);
         s.getGrafo().conectar(zParqueArmenia, zCentroArmenia, 1.2, true, 5);
         s.getGrafo().conectar(zParqueArmenia, zHospitalArmenia, 2.0, true, 6);
+
+        //ZONA QUIMBAYA
+        Zona zCentroQuimbaya = new Zona("Centro Quimbaya", TipoZona.CIUDAD, quimbaya, 40000, 4, 4.622674012500528, -75.76189897952767);
+
+        Zona zRefugioQuimbaya = new Zona("Refugio Instituto Quimbaya", TipoZona.REFUGIO, quimbaya, 1000, 2, 4.628397608254127, -75.77039223011448
+        );
+
+        Zona zHospitalQuimbaya = new Zona("Hospital Sagrado Corazón de Jesús", TipoZona.CENTRO_AYUDA, quimbaya, 0, 1, 4.62096, -75.76543
+        );
+
+        Zona zBomberosQuimbaya = new Zona("Cuerpo de Bomberos Voluntarios de Quimbaya", TipoZona.CENTRO_AYUDA, quimbaya, 0, 2, 4.6225722628017625, -75.7600676834655
+        );
+
+        Zona zColegioQuimbaya = new Zona(
+                "Colegio Policarpa Salavarrieta", TipoZona.REFUGIO, quimbaya, 800, 3, 4.624768503276307, -75.76277162725293
+        );
+
+        Zona zParqueQuimbaya = new Zona(
+                "Parque Principal Quimbaya", TipoZona.REFUGIO, quimbaya, 500, 1, 4.622424053944915, -75.76307781644127
+        );
+
+        s.agregarZona(zCentroQuimbaya);
+        s.agregarZona(zRefugioQuimbaya);
+        s.agregarZona(zHospitalQuimbaya);
+        s.agregarZona(zBomberosQuimbaya);
+        s.agregarZona(zColegioQuimbaya);
+        s.agregarZona(zParqueQuimbaya);
+
+
+        s.getGrafo().conectar(zCentroQuimbaya, zHospitalQuimbaya, 0.8, true, 10);
+        s.getGrafo().conectar(zCentroQuimbaya, zRefugioQuimbaya, 1.0, false, 8);
+        s.getGrafo().conectar(zHospitalQuimbaya, zBomberosQuimbaya, 0.6, true, 9);
+        s.getGrafo().conectar(zBomberosQuimbaya, zColegioQuimbaya, 1.5, true, 7);
+        s.getGrafo().conectar(zColegioQuimbaya, zParqueQuimbaya, 1.2, true, 6);
+        s.getGrafo().conectar(zParqueQuimbaya, zCentroQuimbaya, 1.0, true, 8);
 
         zCiudad.getInventario().put(TipoRecurso.AGUA, 6000);
         zCiudad.getInventario().put(TipoRecurso.ALIMENTO, 4000);
