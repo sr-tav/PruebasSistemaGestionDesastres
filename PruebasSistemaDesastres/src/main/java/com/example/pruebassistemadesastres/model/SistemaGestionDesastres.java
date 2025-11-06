@@ -142,6 +142,7 @@ public class SistemaGestionDesastres {
         Municipio montenegro = new Municipio("Montenegro", 35000);
         Municipio tebaida = new Municipio("La Tebaida", 35189);
         Municipio circasia = new Municipio("Circasia", 29789);
+        Municipio salento = new Municipio("Salento", 9846);
 
 
 
@@ -370,6 +371,50 @@ public class SistemaGestionDesastres {
         s.getGrafo().conectar(zBomberosCircasia, zColegioCircasia, 1.2, true, 7);
         s.getGrafo().conectar(zColegioCircasia, zParqueCircasia, 1.0, true, 6);
         s.getGrafo().conectar(zParqueCircasia, zCentroCircasia, 0.9, true, 8);
+
+        //ZONA SALENTO
+        Zona zCentroSalento = new Zona(
+                "Centro Salento", TipoZona.CIUDAD, salento, 9846, 4,
+                4.638256988779316, -75.568815222479029);
+
+        Zona zRefugioSalento = new Zona(
+                "Coliseo Salento", TipoZona.REFUGIO, salento, 500, 2,
+                4.638558329785101, -75.56981064289566
+        );
+
+        Zona zHospitalSalento = new Zona(
+                "Hospital San Vicente de Paul", TipoZona.CENTRO_AYUDA, salento, 0, 1,
+                4.6364403790107085, -75.57066734512179
+        );
+
+        Zona zBomberosSalento = new Zona(
+                "Cuerpo de Bomberos Salento", TipoZona.CENTRO_AYUDA, salento, 0, 2,
+                4.640112805952863, -75.57190294782289
+        );
+
+        Zona zColegioSalento = new Zona(
+                "Liceo Quindio", TipoZona.REFUGIO, salento, 400, 3,
+                4.640166566765212, -75.57068460593389
+        );
+
+        Zona zParqueSalento = new Zona(
+                "Parque Principal Salento", TipoZona.REFUGIO, salento, 300, 1,
+                4.637204737655874, -75.56978060697949
+        );
+
+        s.agregarZona(zCentroSalento);
+        s.agregarZona(zRefugioSalento);
+        s.agregarZona(zHospitalSalento);
+        s.agregarZona(zBomberosSalento);
+        s.agregarZona(zColegioSalento);
+        s.agregarZona(zParqueSalento);
+
+        s.getGrafo().conectar(zCentroSalento, zHospitalSalento, 0.5, true, 10);
+        s.getGrafo().conectar(zCentroSalento, zRefugioSalento, 0.8, false, 8);
+        s.getGrafo().conectar(zHospitalSalento, zBomberosSalento, 0.4, true, 9);
+        s.getGrafo().conectar(zBomberosSalento, zColegioSalento, 0.7, true, 7);
+        s.getGrafo().conectar(zColegioSalento, zParqueSalento, 0.6, true, 6);
+        s.getGrafo().conectar(zParqueSalento, zCentroSalento, 0.5, true, 8);
 
 
         zCiudad.getInventario().put(TipoRecurso.AGUA, 6000);
