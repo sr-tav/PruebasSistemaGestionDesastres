@@ -141,6 +141,9 @@ public class SistemaGestionDesastres {
         Municipio quimbaya = new Municipio("Quimbaya", 40000);
         Municipio montenegro = new Municipio("Montenegro", 35000);
         Municipio tebaida = new Municipio("La Tebaida", 35189);
+        Municipio circasia = new Municipio("Circasia", 29789);
+
+
 
 
         Zona zCiudad = new Zona("Ciudad Calarcá", TipoZona.CIUDAD, calarca, 50000, 4, 4.533338, -75.640813);
@@ -326,6 +329,47 @@ public class SistemaGestionDesastres {
         s.getGrafo().conectar(zBomberosTebaida, zColegioTebaida, 1.5, true, 7);
         s.getGrafo().conectar(zColegioTebaida, zParqueTebaida, 1.2, true, 6);
         s.getGrafo().conectar(zParqueTebaida, zCentroTebaida, 1.0, true, 8);
+
+        //Zona Circasia
+        Zona zCentroCircasia = new Zona("Centro Circasia", TipoZona.CIUDAD, circasia, 29789, 4, 4.61980613315615, -75.63619390377012
+        );
+
+        Zona zRefugioCircasia = new Zona("Coliseo de Circasia", TipoZona.REFUGIO, circasia, 800, 2, 4.621861915311156, -75.63732955597916
+        );
+
+        Zona zHospitalCircasia = new Zona("Hospital San Vicente de Paul", TipoZona.CENTRO_AYUDA, circasia, 0, 1,
+                4.618896178627092, -75.63732879091812
+        );
+
+        Zona zBomberosCircasia = new Zona(
+                "Cuerpo de Bomberos Circasia", TipoZona.CENTRO_AYUDA, circasia, 0, 2,
+                4.616888201366161, -75.63478486236014
+        );
+
+        Zona zColegioCircasia = new Zona(
+                "Institución Educativa Luis Eduardo Calvo", TipoZona.REFUGIO, circasia, 700, 3,
+                4.621956943477734, -75.63466958453377
+        );
+
+        Zona zParqueCircasia = new Zona(
+                "Parque Principal Circasia", TipoZona.REFUGIO, circasia, 400, 1,
+                4.62038120976319, -75.63439016559786
+        );
+
+        s.agregarZona(zCentroCircasia);
+        s.agregarZona(zRefugioCircasia);
+        s.agregarZona(zHospitalCircasia);
+        s.agregarZona(zBomberosCircasia);
+        s.agregarZona(zColegioCircasia);
+        s.agregarZona(zParqueCircasia);
+
+
+        s.getGrafo().conectar(zCentroCircasia, zHospitalCircasia, 0.7, true, 10);
+        s.getGrafo().conectar(zCentroCircasia, zRefugioCircasia, 1.0, false, 8);
+        s.getGrafo().conectar(zHospitalCircasia, zBomberosCircasia, 0.6, true, 9);
+        s.getGrafo().conectar(zBomberosCircasia, zColegioCircasia, 1.2, true, 7);
+        s.getGrafo().conectar(zColegioCircasia, zParqueCircasia, 1.0, true, 6);
+        s.getGrafo().conectar(zParqueCircasia, zCentroCircasia, 0.9, true, 8);
 
 
         zCiudad.getInventario().put(TipoRecurso.AGUA, 6000);
