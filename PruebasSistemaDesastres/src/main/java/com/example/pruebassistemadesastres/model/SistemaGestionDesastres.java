@@ -144,6 +144,7 @@ public class SistemaGestionDesastres {
         Municipio circasia = new Municipio("Circasia", 29789);
         Municipio salento = new Municipio("Salento", 9846);
         Municipio filandia = new Municipio("Filandia", 13412);
+        Municipio cordoba = new  Municipio("Cordoba", 5954);
 
 
 
@@ -450,6 +451,47 @@ public class SistemaGestionDesastres {
         s.getGrafo().conectar(zBomberosFilandia, zColegioFilandia, 0.8, true, 7);
         s.getGrafo().conectar(zColegioFilandia, zParqueFilandia, 0.7, true, 6);
         s.getGrafo().conectar(zParqueFilandia, zCentroFilandia, 0.5, true, 8);
+
+        //ZONA CORDOBA
+        Zona zCentroCordoba = new Zona(
+                "Centro Córdoba", TipoZona.CIUDAD, cordoba, 5954, 4,4.391107579325129, -75.68630075761499
+        );
+
+        Zona zRefugioCordoba = new Zona(
+                "Casa de la cultura Cordoba", TipoZona.REFUGIO, cordoba, 800, 2, 4.390068762643359, -75.68448328526303
+        );
+
+        Zona zHospitalCordoba = new Zona(
+                "Hospital San Roque Córdoba", TipoZona.CENTRO_AYUDA, cordoba, 0, 1, 4.389874996376682, -75.68706653501403
+        );
+
+        Zona zBomberosCordoba = new Zona(
+                "Cuerpo de Bomberos Voluntarios de Córdoba", TipoZona.CENTRO_AYUDA, cordoba, 0, 2, 4.39017513963827, -75.68603840915831
+        );
+
+        Zona zColegioCordoba = new Zona(
+                "Institucion Educativa Jose Maria Cordoba", TipoZona.REFUGIO, cordoba, 600, 3, 4.3925509839196035, -75.6872934261599
+        );
+
+        Zona zParqueCordoba = new Zona(
+                "Parque Principal Córdoba", TipoZona.REFUGIO, cordoba, 500, 1, 4.390228386542014, -75.68550731757038
+        );
+
+
+        s.agregarZona(zCentroCordoba);
+        s.agregarZona(zRefugioCordoba);
+        s.agregarZona(zHospitalCordoba);
+        s.agregarZona(zBomberosCordoba);
+        s.agregarZona(zColegioCordoba);
+        s.agregarZona(zParqueCordoba);
+
+        s.getGrafo().conectar(zCentroCordoba, zHospitalCordoba, 0.6, true, 9);
+        s.getGrafo().conectar(zCentroCordoba, zRefugioCordoba, 0.8, false, 8);
+        s.getGrafo().conectar(zHospitalCordoba, zBomberosCordoba, 0.5, true, 9);
+        s.getGrafo().conectar(zBomberosCordoba, zColegioCordoba, 1.0, true, 7);
+        s.getGrafo().conectar(zColegioCordoba, zParqueCordoba, 0.9, true, 6);
+        s.getGrafo().conectar(zParqueCordoba, zCentroCordoba, 0.7, true, 8);
+
 
 
 
