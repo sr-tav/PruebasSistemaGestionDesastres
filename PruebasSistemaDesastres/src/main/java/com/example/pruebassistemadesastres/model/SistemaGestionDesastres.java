@@ -145,6 +145,7 @@ public class SistemaGestionDesastres {
         Municipio salento = new Municipio("Salento", 9846);
         Municipio filandia = new Municipio("Filandia", 13412);
         Municipio cordoba = new  Municipio("Cordoba", 5954);
+        Municipio buenavista = new  Municipio("Buenavista", 3527);
 
 
 
@@ -491,6 +492,45 @@ public class SistemaGestionDesastres {
         s.getGrafo().conectar(zBomberosCordoba, zColegioCordoba, 1.0, true, 7);
         s.getGrafo().conectar(zColegioCordoba, zParqueCordoba, 0.9, true, 6);
         s.getGrafo().conectar(zParqueCordoba, zCentroCordoba, 0.7, true, 8);
+
+        //ZONA BUENAVISTA
+
+        Zona zCentroBuenavista = new Zona(
+                "Centro Buenavista", TipoZona.CIUDAD, buenavista, 3527, 4,
+                4.360224731266342, -75.73876879303484
+        );
+
+        Zona zRefugioBuenavista = new Zona(
+                "Coliseo de Bunavusta", TipoZona.REFUGIO, buenavista, 600, 2,
+                4.361253146429546, -75.74146897528607
+        );
+
+        Zona zHospitalBuenavista = new Zona("Hospital San Camilo", TipoZona.CENTRO_AYUDA, buenavista, 0, 1, 4.360307129936257, -75.73977593707554
+        );
+
+        Zona zBomberosBuenavista = new Zona("Cuerpo de Bomberos Voluntarios de Buenavista", TipoZona.CENTRO_AYUDA, buenavista, 0, 2, 4.360470894137083, -75.73995404799814
+        );
+
+        Zona zColegioBuenavista = new Zona("Instituto Buenavista", TipoZona.REFUGIO, buenavista, 500, 3, 4.360955811592284, -75.74133081224039
+        );
+
+        Zona zParqueBuenavista = new Zona("Parque Principal Buenavista", TipoZona.REFUGIO, buenavista, 400, 1, 4.359470162222283, -75.73819903261159
+        );
+
+
+        s.agregarZona(zCentroBuenavista);
+        s.agregarZona(zRefugioBuenavista);
+        s.agregarZona(zHospitalBuenavista);
+        s.agregarZona(zBomberosBuenavista);
+        s.agregarZona(zColegioBuenavista);
+        s.agregarZona(zParqueBuenavista);
+
+        s.getGrafo().conectar(zCentroBuenavista, zHospitalBuenavista, 0.6, true, 9);
+        s.getGrafo().conectar(zCentroBuenavista, zRefugioBuenavista, 0.9, false, 8);
+        s.getGrafo().conectar(zHospitalBuenavista, zBomberosBuenavista, 0.5, true, 9);
+        s.getGrafo().conectar(zBomberosBuenavista, zColegioBuenavista, 1.0, true, 7);
+        s.getGrafo().conectar(zColegioBuenavista, zParqueBuenavista, 0.8, true, 6);
+        s.getGrafo().conectar(zParqueBuenavista, zCentroBuenavista, 0.7, true, 8);
 
 
 
