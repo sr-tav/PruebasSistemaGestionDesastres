@@ -146,6 +146,7 @@ public class SistemaGestionDesastres {
         Municipio filandia = new Municipio("Filandia", 13412);
         Municipio cordoba = new  Municipio("Cordoba", 5954);
         Municipio buenavista = new  Municipio("Buenavista", 3527);
+        Municipio pijao = new Municipio("Pijao", 5960);
 
 
 
@@ -531,6 +532,44 @@ public class SistemaGestionDesastres {
         s.getGrafo().conectar(zBomberosBuenavista, zColegioBuenavista, 1.0, true, 7);
         s.getGrafo().conectar(zColegioBuenavista, zParqueBuenavista, 0.8, true, 6);
         s.getGrafo().conectar(zParqueBuenavista, zCentroBuenavista, 0.7, true, 8);
+
+        // ZONA PIJAO
+
+        Zona zCentroPijao = new Zona("Centro Pijao", TipoZona.CIUDAD, pijao, 5960, 4, 4.333440416778879, -75.7038804115483
+        );
+
+        Zona zRefugioPijao = new Zona("Coliseo de Pijao", TipoZona.REFUGIO, pijao, 700, 2, 4.328410280401068, -75.7061594095711
+        );
+
+        Zona zHospitalPijao = new Zona("Hospital Santa Ana de Pijao", TipoZona.CENTRO_AYUDA, pijao, 0, 1, 4.332917697831475, -75.7058323105764
+        );
+
+        Zona zBomberosPijao = new Zona("Cuerpo de Bomberos Voluntarios de Pijao", TipoZona.CENTRO_AYUDA, pijao, 0, 2, 4.335797010901282, -75.70326112457927
+        );
+
+        Zona zColegioPijao = new Zona("Institución Educativa Santa Teresita", TipoZona.REFUGIO, pijao, 600, 3, 4.335248035567887, -75.7037961440746
+        );
+
+        Zona zParquePijao = new Zona("Parque Principal de Pijao", TipoZona.REFUGIO, pijao, 400, 1, 4.334114545311118, -75.7040323782889
+        );
+
+
+        s.agregarZona(zCentroPijao);
+        s.agregarZona(zRefugioPijao);
+        s.agregarZona(zHospitalPijao);
+        s.agregarZona(zBomberosPijao);
+        s.agregarZona(zColegioPijao);
+        s.agregarZona(zParquePijao);
+
+
+        s.getGrafo().conectar(zCentroPijao, zHospitalPijao, 0.6, true, 10);
+        s.getGrafo().conectar(zCentroPijao, zRefugioPijao, 1.0, false, 8);
+        s.getGrafo().conectar(zHospitalPijao, zBomberosPijao, 0.5, true, 9);
+        s.getGrafo().conectar(zBomberosPijao, zColegioPijao, 1.2, true, 7);
+        s.getGrafo().conectar(zColegioPijao, zParquePijao, 0.9, true, 6);
+        s.getGrafo().conectar(zParquePijao, zCentroPijao, 0.7, true, 8);
+
+
 
 
 
