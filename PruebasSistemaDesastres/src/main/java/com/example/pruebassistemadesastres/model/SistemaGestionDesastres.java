@@ -140,6 +140,7 @@ public class SistemaGestionDesastres {
         Municipio armenia = new Municipio("Armenia", 295000);
         Municipio quimbaya = new Municipio("Quimbaya", 40000);
         Municipio montenegro = new Municipio("Montenegro", 35000);
+        Municipio tebaida = new Municipio("La Tebaida", 35189);
 
 
         Zona zCiudad = new Zona("Ciudad Calarcá", TipoZona.CIUDAD, calarca, 50000, 4, 4.533338, -75.640813);
@@ -271,13 +272,60 @@ public class SistemaGestionDesastres {
         s.agregarZona(zBomberosMontenegro);
         s.agregarZona(zColegioMontenegro);
         s.agregarZona(zParqueMontenegro);
-        
+
         s.getGrafo().conectar(zCentroMontenegro, zHospitalMontenegro, 0.9, true, 10);
         s.getGrafo().conectar(zCentroMontenegro, zRefugioMontenegro, 1.2, false, 8);
         s.getGrafo().conectar(zHospitalMontenegro, zBomberosMontenegro, 0.7, true, 9);
         s.getGrafo().conectar(zBomberosMontenegro, zColegioMontenegro, 1.6, true, 7);
         s.getGrafo().conectar(zColegioMontenegro, zParqueMontenegro, 1.3, true, 6);
         s.getGrafo().conectar(zParqueMontenegro, zCentroMontenegro, 0.8, true, 8);
+
+        //ZONA TEBAIDA
+        Zona zCentroTebaida = new Zona(
+                "Centro La Tebaida", TipoZona.CIUDAD, tebaida, 35000, 4,
+                4.452408340649018, -75.78860194545679
+        );
+
+        Zona zRefugioTebaida = new Zona(
+                "Coliso de la Tebaida", TipoZona.REFUGIO, tebaida, 1000, 2,
+                4.4564173065870705, -75.78937640228851
+        );
+
+        Zona zHospitalTebaida = new Zona(
+                "Hospital Pio X", TipoZona.CENTRO_AYUDA, tebaida, 0, 1,
+                4.451956501660902, -75.78222867713673
+        );
+
+        Zona zBomberosTebaida = new Zona(
+                "Cuerpo de Bomberos La Tebaida", TipoZona.CENTRO_AYUDA, tebaida, 0, 2,
+                4.451953114093611, -75.78381194607292
+        );
+
+        Zona zColegioTebaida = new Zona(
+                "Instituto Tebaida", TipoZona.REFUGIO, tebaida, 800, 3,
+                4.452524336390497, -75.79143645083546
+        );
+
+        Zona zParqueTebaida = new Zona(
+                "Parque Principal La Tebaida", TipoZona.REFUGIO, tebaida, 500, 1,
+                4.453779866416768, -75.78929191963513
+        );
+
+
+        s.agregarZona(zCentroTebaida);
+        s.agregarZona(zRefugioTebaida);
+        s.agregarZona(zHospitalTebaida);
+        s.agregarZona(zBomberosTebaida);
+        s.agregarZona(zColegioTebaida);
+        s.agregarZona(zParqueTebaida);
+
+
+        s.getGrafo().conectar(zCentroTebaida, zHospitalTebaida, 0.8, true, 10);
+        s.getGrafo().conectar(zCentroTebaida, zRefugioTebaida, 1.0, false, 8);
+        s.getGrafo().conectar(zHospitalTebaida, zBomberosTebaida, 0.6, true, 9);
+        s.getGrafo().conectar(zBomberosTebaida, zColegioTebaida, 1.5, true, 7);
+        s.getGrafo().conectar(zColegioTebaida, zParqueTebaida, 1.2, true, 6);
+        s.getGrafo().conectar(zParqueTebaida, zCentroTebaida, 1.0, true, 8);
 
 
         zCiudad.getInventario().put(TipoRecurso.AGUA, 6000);
