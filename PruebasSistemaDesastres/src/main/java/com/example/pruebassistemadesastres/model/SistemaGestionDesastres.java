@@ -40,7 +40,7 @@ public class SistemaGestionDesastres {
     public List<Ruta> getRutas() { return rutas; }
     public List<Evacuacion> getEvacuaciones() { return evacuaciones; }
 
-    //Metodos para agregar entidades
+
     public void agregarZona(Zona z) { zonas.add(z); grafo.agregarZona(z); }
     public void agregarRuta(Ruta r) { rutas.add(r); }
     public void agregarRecurso(Recurso r) { recursos.add(r); }
@@ -147,6 +147,7 @@ public class SistemaGestionDesastres {
         Municipio cordoba = new  Municipio("Cordoba", 5954);
         Municipio buenavista = new  Municipio("Buenavista", 3527);
         Municipio pijao = new Municipio("Pijao", 5960);
+        Municipio genova = new Municipio("Genova", 7809);
 
 
 
@@ -568,6 +569,42 @@ public class SistemaGestionDesastres {
         s.getGrafo().conectar(zBomberosPijao, zColegioPijao, 1.2, true, 7);
         s.getGrafo().conectar(zColegioPijao, zParquePijao, 0.9, true, 6);
         s.getGrafo().conectar(zParquePijao, zCentroPijao, 0.7, true, 8);
+
+
+        Zona zCentroGenova = new Zona("Centro Génova", TipoZona.CIUDAD, genova, 7809, 4, 4.207780804095296, -75.7893081565009
+        );
+
+        Zona zRefugioGenova = new Zona(" Instituto Genova", TipoZona.REFUGIO, genova, 1000, 2, 4.204287386927032, -75.79380665257369
+        );
+
+        Zona zHospitalGenova = new Zona("Hospital de Genova", TipoZona.CENTRO_AYUDA, genova, 0, 1, 4.209468941112951, -75.78739526463603
+        );
+
+        Zona zBomberosGenova = new Zona("Cuerpo de Bomberos Génova", TipoZona.CENTRO_AYUDA, genova, 0, 2, 4.2066234765622, -75.7912364530711
+        );
+
+        Zona zColegioGenova = new Zona("Colegio San vicente de Paul-Genova", TipoZona.REFUGIO, genova, 800, 3, 4.207359599878561, -75.7906491523019
+        );
+
+        Zona zParqueGenova = new Zona("Parque Principal Génova", TipoZona.REFUGIO, genova, 500, 1, 4.206389114094996, -75.7905448502346
+        );
+
+
+        s.agregarZona(zCentroGenova);
+        s.agregarZona(zRefugioGenova);
+        s.agregarZona(zHospitalGenova);
+        s.agregarZona(zBomberosGenova);
+        s.agregarZona(zColegioGenova);
+        s.agregarZona(zParqueGenova);
+
+
+        s.getGrafo().conectar(zCentroGenova, zHospitalGenova, 0.8, true, 10);
+        s.getGrafo().conectar(zCentroGenova, zRefugioGenova, 1.0, false, 8);
+        s.getGrafo().conectar(zHospitalGenova, zBomberosGenova, 0.6, true, 9);
+        s.getGrafo().conectar(zBomberosGenova, zColegioGenova, 1.5, true, 7);
+        s.getGrafo().conectar(zColegioGenova, zParqueGenova, 1.2, true, 6);
+        s.getGrafo().conectar(zParqueGenova, zCentroGenova, 1.0, true, 8);
+
 
 
 
