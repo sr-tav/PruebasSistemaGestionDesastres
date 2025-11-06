@@ -139,6 +139,7 @@ public class SistemaGestionDesastres {
         Municipio calarca = new Municipio("Calarcá", 75000);
         Municipio armenia = new Municipio("Armenia", 295000);
         Municipio quimbaya = new Municipio("Quimbaya", 40000);
+        Municipio montenegro = new Municipio("Montenegro", 35000);
 
 
         Zona zCiudad = new Zona("Ciudad Calarcá", TipoZona.CIUDAD, calarca, 50000, 4, 4.533338, -75.640813);
@@ -234,6 +235,50 @@ public class SistemaGestionDesastres {
         s.getGrafo().conectar(zBomberosQuimbaya, zColegioQuimbaya, 1.5, true, 7);
         s.getGrafo().conectar(zColegioQuimbaya, zParqueQuimbaya, 1.2, true, 6);
         s.getGrafo().conectar(zParqueQuimbaya, zCentroQuimbaya, 1.0, true, 8);
+
+        // ZONA MONTENEGRO
+        Zona zCentroMontenegro = new Zona(
+                "Centro Montenegro", TipoZona.CIUDAD, montenegro, 35000, 4,
+                4.5665179383512005, -75.75180899079963
+        );
+
+        Zona zRefugioMontenegro = new Zona(
+                "Coliseo de Montenegro", TipoZona.REFUGIO, montenegro, 1200, 2,
+                4.566721163549409, -75.74893931982308
+        );
+
+        Zona zHospitalMontenegro = new Zona(
+                "Hospital Roberto Quintero Villa", TipoZona.CENTRO_AYUDA, montenegro, 0, 1,
+                4.558768824248389, -75.74864005860003
+        );
+
+        Zona zBomberosMontenegro = new Zona(
+                "Cuerpo de Bomberos Montenegro", TipoZona.CENTRO_AYUDA, montenegro, 0, 2,
+                4.5686514560365605, -75.74701369580801);
+
+        Zona zColegioMontenegro = new Zona(
+                "Institución Educativa General Santander", TipoZona.REFUGIO, montenegro, 800, 3,
+                4.566563056316675, -75.75625569646814
+        );
+
+        Zona zParqueMontenegro = new Zona(
+                "Parque Principal Montenegro", TipoZona.REFUGIO, montenegro, 500, 1,
+                4.567190733256212, -75.750485370500279);
+
+        s.agregarZona(zCentroMontenegro);
+        s.agregarZona(zRefugioMontenegro);
+        s.agregarZona(zHospitalMontenegro);
+        s.agregarZona(zBomberosMontenegro);
+        s.agregarZona(zColegioMontenegro);
+        s.agregarZona(zParqueMontenegro);
+        
+        s.getGrafo().conectar(zCentroMontenegro, zHospitalMontenegro, 0.9, true, 10);
+        s.getGrafo().conectar(zCentroMontenegro, zRefugioMontenegro, 1.2, false, 8);
+        s.getGrafo().conectar(zHospitalMontenegro, zBomberosMontenegro, 0.7, true, 9);
+        s.getGrafo().conectar(zBomberosMontenegro, zColegioMontenegro, 1.6, true, 7);
+        s.getGrafo().conectar(zColegioMontenegro, zParqueMontenegro, 1.3, true, 6);
+        s.getGrafo().conectar(zParqueMontenegro, zCentroMontenegro, 0.8, true, 8);
+
 
         zCiudad.getInventario().put(TipoRecurso.AGUA, 6000);
         zCiudad.getInventario().put(TipoRecurso.ALIMENTO, 4000);
