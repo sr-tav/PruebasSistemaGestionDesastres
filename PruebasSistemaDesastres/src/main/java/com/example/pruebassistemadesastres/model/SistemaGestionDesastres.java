@@ -143,6 +143,7 @@ public class SistemaGestionDesastres {
         Municipio tebaida = new Municipio("La Tebaida", 35189);
         Municipio circasia = new Municipio("Circasia", 29789);
         Municipio salento = new Municipio("Salento", 9846);
+        Municipio filandia = new Municipio("Filandia", 13412);
 
 
 
@@ -415,6 +416,41 @@ public class SistemaGestionDesastres {
         s.getGrafo().conectar(zBomberosSalento, zColegioSalento, 0.7, true, 7);
         s.getGrafo().conectar(zColegioSalento, zParqueSalento, 0.6, true, 6);
         s.getGrafo().conectar(zParqueSalento, zCentroSalento, 0.5, true, 8);
+
+        // ZONA FILANDIA
+
+        Zona zCentroFilandia = new Zona("Centro Filandia", TipoZona.CIUDAD, filandia, 13412, 4, 4.673635116175152, -75.65704846099914
+        );
+
+        Zona zRefugioFilandia = new Zona("Casa de la Cultura", TipoZona.REFUGIO, filandia, 800, 2, 4.674598032282073, -75.65774126406795
+        );
+
+        Zona zHospitalFilandia = new Zona("Hospital San Vicente de Paul-Filandia", TipoZona.CENTRO_AYUDA, filandia, 0, 1, 4.672400814631654, -75.6617514229001
+        );
+
+        Zona zBomberosFilandia = new Zona("Cuerpo de Bomberos Voluntarios Filandia", TipoZona.CENTRO_AYUDA, filandia, 0, 2, 4.671171669583376, -75.65755880634279
+        );
+
+        Zona zColegioFilandia = new Zona("Institución Educativa Liceo Andino de la Santísima Trinidad", TipoZona.REFUGIO, filandia, 700, 3, 4.672705421145436, -75.65584122252575
+        );
+
+        Zona zParqueFilandia = new Zona("Parque Principal de Filandia", TipoZona.REFUGIO, filandia, 400, 1, 4.674794981083568, -75.65815929931857
+        );
+
+        s.agregarZona(zCentroFilandia);
+        s.agregarZona(zRefugioFilandia);
+        s.agregarZona(zHospitalFilandia);
+        s.agregarZona(zBomberosFilandia);
+        s.agregarZona(zColegioFilandia);
+        s.agregarZona(zParqueFilandia);
+
+        s.getGrafo().conectar(zCentroFilandia, zHospitalFilandia, 0.6, true, 10);
+        s.getGrafo().conectar(zCentroFilandia, zRefugioFilandia, 0.9, false, 8);
+        s.getGrafo().conectar(zHospitalFilandia, zBomberosFilandia, 0.4, true, 9);
+        s.getGrafo().conectar(zBomberosFilandia, zColegioFilandia, 0.8, true, 7);
+        s.getGrafo().conectar(zColegioFilandia, zParqueFilandia, 0.7, true, 6);
+        s.getGrafo().conectar(zParqueFilandia, zCentroFilandia, 0.5, true, 8);
+
 
 
         zCiudad.getInventario().put(TipoRecurso.AGUA, 6000);
