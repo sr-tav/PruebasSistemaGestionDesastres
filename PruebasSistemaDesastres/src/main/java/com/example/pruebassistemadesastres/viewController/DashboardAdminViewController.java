@@ -21,89 +21,27 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DashboardAdminViewController {
+    /**
+     * ---------------------------------------ESPACIO DE INICIALIZACION--------------------------------------
+     */
     private SistemaGestionDesastres sistemaGestionDesastres;
-    @FXML private Pane paneMapa;
-
     private MapView mapView;
+    @FXML private AnchorPane PaneAdmin;
+    @FXML private AnchorPane PaneEstads;
+    @FXML private AnchorPane PaneInicio;
+    @FXML private AnchorPane PaneRutas;
+    @FXML private Pane paneMapa;
+    private Marker mDesastre;
+    private Marker mHospital;
+    private CoordinateLine ruta;
+    private MapCircle zonaCritica;
+    private MapCircle zonaModerada;
+    private MapCircle zonaEstable;
+    private MapLabel lblCalarca;
 
-    @FXML
-    private Button ActualizarRecursosDistribuidos;
-
-    @FXML
-    private AnchorPane PaneAdmin;
-
-    @FXML
-    private AnchorPane PaneEstads;
-
-    @FXML
-    private AnchorPane PaneInicio;
-
-    @FXML
-    private AnchorPane PaneRutas;
-
-    @FXML
-    private Button actualizarAvanceEvacuaciones;
-
-    @FXML
-    private Button actualizarInventarioaAdmin;
-
-    @FXML
-    private Button actualizarRutas;
-
-    @FXML
-    private Button agregarRuta;
-
-    @FXML
-    private Button asginarEquiposAdmin;
-
-    @FXML
-    private Button btnAdmin;
-
-    @FXML
-    private Button btnEstadisticas;
-
-    @FXML
-    private Button btnInicio;
-
-    @FXML
-    private Button btnRutas;
-
-    @FXML
-    private Button cerrarSesionAdmin;
-
-    @FXML
-    private Button equiposAdmin;
-
-    @FXML
-    private PieChart graficoAvanceRecursos;
-
-    @FXML
-    private PieChart graficoRecursosDistribuidos;
-
-    @FXML
-    private Button minimizarAdmin;
-
-    @FXML
-    private Button recursosInicio;
-
-    @FXML
-    private Button salirAdmin;
-
-    @FXML
-    private Button simulacro;
-
-    @FXML
-    private TableView<?> tablaGestionInventario;
-
-    @FXML
-    private ComboBox<Municipio> comboMunicipio;
-    @FXML
-    private ComboBox<Zona> comboZonaInicio;
-    @FXML
-    private ComboBox<Zona> comboZonaFinal;
-    @FXML
-    private Button btnMostrarRuta;
-
+    /**
+     *
+     */
     @FXML
     private void initialize() {
         mapView = new MapView();
@@ -141,7 +79,257 @@ public class DashboardAdminViewController {
             }
         });
     }
+    /**
+     *
+     */
+    private void inicializarCombos() {
+        if (sistemaGestionDesastres == null) return;
 
+        List<Municipio> municipios = sistemaGestionDesastres.getZonas().stream()
+                .map(Zona::getMunicipio)
+                .distinct()
+                .toList();
+
+        comboMunicipio.setItems(FXCollections.observableArrayList(municipios));
+        comboMunicipio.setConverter(new StringConverter<>() {
+            @Override public String toString(Municipio m) { return m == null ? "" : m.getNombre(); }
+            @Override public Municipio fromString(String s) { return null; }
+        });
+
+        StringConverter<Zona> zonaConverter = new StringConverter<>() {
+            @Override public String toString(Zona z) { return z == null ? "" : z.getNombre(); }
+            @Override public Zona fromString(String s) { return null; }
+        };
+        comboZonaInicio.setConverter(zonaConverter);
+        comboZonaFinal.setConverter(zonaConverter);
+
+        comboMunicipio.setOnAction(evt -> {
+            Municipio seleccionado = comboMunicipio.getSelectionModel().getSelectedItem();
+            if (seleccionado == null) return;
+
+            mostrarMarcadoresMunicipio(seleccionado);
+
+            List<Zona> zonasMunicipio = sistemaGestionDesastres.getZonas().stream()
+                    .filter(z -> z.getMunicipio().equals(seleccionado))
+                    .toList();
+            ObservableList<Zona> obsZonas = FXCollections.observableArrayList(zonasMunicipio);
+            comboZonaInicio.setItems(obsZonas);
+            comboZonaFinal.setItems(obsZonas);
+        });
+    }
+    /**
+     * ---------------------------------------VENTANA DE INICIO--------------------------------------
+     */
+    @FXML private Button btnInicio;
+    /**
+     *
+     * @param event
+     */
+    @FXML
+    void clickInicio(ActionEvent event) {
+        paneMapa.toFront();
+        PaneInicio.setVisible(true);
+        PaneRutas.setVisible(false);
+        PaneEstads.setVisible(false);
+        PaneAdmin.setVisible(false);
+        paneMapa.setPrefWidth(1257);
+        paneMapa.setPrefHeight(536);
+    }
+    /**
+     * ---------------------------------------VENTANA DE ADMIN--------------------------------------
+     */
+    @FXML private Button btnAdmin;
+    /**
+     *
+     * @param event
+     */
+    @FXML
+    void clickAdmin(ActionEvent event) {
+        paneMapa.toFront();
+        PaneInicio.setVisible(false);
+        PaneRutas.setVisible(false);
+        PaneEstads.setVisible(false);
+        PaneAdmin.setVisible(true);
+        paneMapa.setPrefWidth(750);
+        paneMapa.setPrefHeight(536);
+    }
+    /**
+     * ---------------------------------------VENTANA DE RUTAS--------------------------------------
+     */
+    @FXML private Button btnRutas;
+    @FXML private ComboBox<Municipio> comboMunicipio;
+    @FXML private ComboBox<Zona> comboZonaInicio;
+    @FXML private ComboBox<Zona> comboZonaFinal;
+    @FXML private Button btnMostrarRuta;
+    /**
+     *
+     * @param event
+     */
+    @FXML
+    void clickRutas(ActionEvent event) {
+        paneMapa.toFront();
+        PaneInicio.setVisible(false);
+        PaneRutas.setVisible(true);
+        PaneEstads.setVisible(false);
+        PaneAdmin.setVisible(false);
+        paneMapa.setPrefWidth(750);
+        paneMapa.setPrefHeight(536);
+    }
+    /**
+     *
+     * @param event
+     */
+    @FXML
+    private void btnMostrarRutaAction(ActionEvent event) {
+        Zona inicio = comboZonaInicio.getSelectionModel().getSelectedItem();
+        Zona destino = comboZonaFinal.getSelectionModel().getSelectedItem();
+
+        if (inicio == null || destino == null) {
+            System.out.println("Debes seleccionar una zona de inicio y una de destino.");
+            return;
+        }
+
+        Ruta ruta = sistemaGestionDesastres.getGrafo().calcularRutaMasCorta(inicio, destino);
+        if (ruta == null) {
+            System.out.println("No hay ruta disponible entre estas zonas.");
+            return;
+        }
+
+        List<Coordinate> coordsRuta = ruta.getParadas().stream()
+                .map(z -> new Coordinate(z.getLatitud(), z.getAltitud()))
+                .toList();
+
+        ServicioRutas.dibujarRutaCarretera(mapView, coordsRuta, true);
+
+        double latCentro = coordsRuta.stream().mapToDouble(Coordinate::getLatitude).average().orElse(0);
+        double lonCentro = coordsRuta.stream().mapToDouble(Coordinate::getLongitude).average().orElse(0);
+        mapView.setCenter(new Coordinate(latCentro, lonCentro));
+        mapView.setZoom(14);
+    }
+    /**
+     * ---------------------------------------VENTANA DE ESTADISTICAS--------------------------------------
+     */
+    @FXML private Button btnEstadisticas;
+    /**
+     *
+     * @param event
+     */
+    @FXML
+    void clickEstadisticas(ActionEvent event) {
+        PaneInicio.setVisible(false);
+        PaneRutas.setVisible(false);
+        PaneEstads.setVisible(true);
+        PaneAdmin.setVisible(false);
+        paneMapa.toBack();
+    }
+    /**
+     * --------------------------------------- GENERALES --------------------------------------
+     */
+    @FXML private Button ActualizarRecursosDistribuidos;
+    @FXML private Button actualizarAvanceEvacuaciones;
+    @FXML private Button actualizarInventarioaAdmin;
+    @FXML private Button actualizarRutas;
+    @FXML private Button agregarRuta;
+    @FXML private Button asginarEquiposAdmin;
+    @FXML private Button cerrarSesionAdmin;
+    @FXML private Button equiposAdmin;
+    @FXML private PieChart graficoAvanceRecursos;
+    @FXML private PieChart graficoRecursosDistribuidos;
+    @FXML private Button minimizarAdmin;
+    @FXML private Button recursosInicio;
+    @FXML private Button salirAdmin;
+    @FXML private Button simulacro;
+    @FXML private TableView<?> tablaGestionInventario;
+    private final List<Marker> marcadoresMunicipio = new ArrayList<>();
+
+    /**
+     *
+     */
+    private void configurarCentro() {
+        Coordinate calarca = new Coordinate(4.5333, -75.6500);
+        mapView.setCenter(calarca);
+        mapView.setZoom(14);
+    }
+    /**
+     *
+     */
+    private void crearOverlays() {
+        Coordinate calarca  = new Coordinate(4.5333, -75.6500);
+        Coordinate desastre = new Coordinate(4.53242, -75.64957);
+        Coordinate hospital = new Coordinate(4.533338, -75.640813);
+
+        mDesastre = Marker.createProvided(Marker.Provided.BLUE)
+                .setPosition(desastre)
+                .setVisible(true);
+
+        mHospital = Marker.createProvided(Marker.Provided.RED)
+                .setPosition(hospital)
+                .setVisible(true);
+
+
+        zonaCritica = new MapCircle(desastre, 250)
+                .setFillColor(Color.color(1, 0, 0.0, 0.5))
+                .setVisible(true);
+        zonaModerada = new MapCircle(desastre, 500)
+                .setFillColor(Color.color(1.0, 0.5, 0.0, 0.35))
+                .setVisible(true);
+        zonaEstable = new MapCircle(desastre, 1000)
+                .setFillColor(Color.color(0.5, 1, 0.0, 0.15))
+                .setVisible(true);
+
+        lblCalarca = new MapLabel("DesastreNaturalRandom")
+                .setPosition(desastre)
+                .setVisible(true);
+
+    }
+
+    /**
+     *
+     */
+    private void agregarOverlaysAlMapa() {
+        // Re-agrega por si el WebView hizo un refresh de capas
+        mapView.addMarker(mDesastre);
+        mapView.addMarker(mHospital);
+        mapView.addMapCircle(zonaCritica);
+        mapView.addMapCircle(zonaModerada);
+        mapView.addMapCircle(zonaEstable);
+        mapView.addLabel(lblCalarca);
+        ServicioRutas.dibujarRutaCarretera(
+                mapView,
+                List.of(mDesastre.getPosition(), mHospital.getPosition()),
+                /*limpiarPrevias*/ true
+        );
+    }
+
+    /**
+     *
+     * @param municipio
+     */
+    private void mostrarMarcadoresMunicipio(Municipio municipio) {
+        // Limpiar marcadores previos
+        for (Marker m : marcadoresMunicipio) {
+            mapView.removeMarker(m);
+        }
+        marcadoresMunicipio.clear();
+
+        List<Zona> zonasMunicipio = sistemaGestionDesastres.getZonas().stream()
+                .filter(z -> z.getMunicipio().equals(municipio))
+                .toList();
+
+        for (Zona z : zonasMunicipio) {
+            Marker marcador;
+            switch (z.getTipo()) {
+                case REFUGIO -> marcador = Marker.createProvided(Marker.Provided.RED);
+                case CENTRO_AYUDA -> marcador = Marker.createProvided(Marker.Provided.BLUE);
+                case CIUDAD -> marcador = Marker.createProvided(Marker.Provided.GREEN);
+                default -> marcador = null;
+            }
+            marcador.setPosition(new Coordinate(z.getLatitud(), z.getAltitud()));
+            marcador.setVisible(true);
+            mapView.addMarker(marcador);
+            marcadoresMunicipio.add(marcador);
+        }
+    }
     @FXML
     void btnActualizarAvanceEvacuaciones(ActionEvent event) {
 
@@ -201,111 +389,9 @@ public class DashboardAdminViewController {
     void btnSimulacro(ActionEvent event) {
 
     }
-
-    @FXML
-    void clickAdmin(ActionEvent event) {
-        paneMapa.toFront();
-        PaneInicio.setVisible(false);
-        PaneRutas.setVisible(false);
-        PaneEstads.setVisible(false);
-        PaneAdmin.setVisible(true);
-        paneMapa.setPrefWidth(750);
-        paneMapa.setPrefHeight(536);
-    }
-
-    @FXML
-    void clickEstadisticas(ActionEvent event) {
-        PaneInicio.setVisible(false);
-        PaneRutas.setVisible(false);
-        PaneEstads.setVisible(true);
-        PaneAdmin.setVisible(false);
-        paneMapa.toBack();
-    }
-
-    @FXML
-    void clickInicio(ActionEvent event) {
-        paneMapa.toFront();
-        PaneInicio.setVisible(true);
-        PaneRutas.setVisible(false);
-        PaneEstads.setVisible(false);
-        PaneAdmin.setVisible(false);
-        paneMapa.setPrefWidth(1257);
-        paneMapa.setPrefHeight(536);
-    }
-
-    @FXML
-    void clickRutas(ActionEvent event) {
-        paneMapa.toFront();
-        PaneInicio.setVisible(false);
-        PaneRutas.setVisible(true);
-        PaneEstads.setVisible(false);
-        PaneAdmin.setVisible(false);
-        paneMapa.setPrefWidth(750);
-        paneMapa.setPrefHeight(536);
-    }
-
-    // Mantén referencias FUERTES a los overlays
-    private Marker mDesastre;
-    private Marker mHospital;
-    private CoordinateLine ruta;
-    private MapCircle zonaCritica;
-    private MapCircle zonaModerada;
-    private MapCircle zonaEstable;
-    private MapLabel lblCalarca;
-
-
-
-    private void configurarCentro() {
-        Coordinate calarca = new Coordinate(4.5333, -75.6500);
-        mapView.setCenter(calarca);
-        mapView.setZoom(14);
-    }
-
-    private void crearOverlays() {
-        Coordinate calarca  = new Coordinate(4.5333, -75.6500);
-        Coordinate desastre = new Coordinate(4.53242, -75.64957);
-        Coordinate hospital = new Coordinate(4.533338, -75.640813);
-
-        mDesastre = Marker.createProvided(Marker.Provided.BLUE)
-                .setPosition(desastre)
-                .setVisible(true);
-
-        mHospital = Marker.createProvided(Marker.Provided.RED)
-                .setPosition(hospital)
-                .setVisible(true);
-
-
-        zonaCritica = new MapCircle(desastre, 250)
-                .setFillColor(Color.color(1, 0, 0.0, 0.5))
-                .setVisible(true);
-        zonaModerada = new MapCircle(desastre, 500)
-                .setFillColor(Color.color(1.0, 0.5, 0.0, 0.35))
-                .setVisible(true);
-        zonaEstable = new MapCircle(desastre, 1000)
-                .setFillColor(Color.color(0.5, 1, 0.0, 0.15))
-                .setVisible(true);
-
-        lblCalarca = new MapLabel("DesastreNaturalRandom")
-                .setPosition(desastre)
-                .setVisible(true);
-
-    }
-
-    private void agregarOverlaysAlMapa() {
-        // Re-agrega por si el WebView hizo un refresh de capas
-        mapView.addMarker(mDesastre);
-        mapView.addMarker(mHospital);
-        mapView.addMapCircle(zonaCritica);
-        mapView.addMapCircle(zonaModerada);
-        mapView.addMapCircle(zonaEstable);
-        mapView.addLabel(lblCalarca);
-        ServicioRutas.dibujarRutaCarretera(
-                mapView,
-                List.of(mDesastre.getPosition(), mHospital.getPosition()),
-                /*limpiarPrevias*/ true
-        );
-    }
-
+    /**
+     * --------------------------------- GETTERS Y SETTERS -----------------------------------------------
+     */
     public SistemaGestionDesastres getSistemaGestionDesastres() {
         return sistemaGestionDesastres;
     }
@@ -314,95 +400,4 @@ public class DashboardAdminViewController {
         this.sistemaGestionDesastres = sistemaGestionDesastres;
     }
 
-    private final List<Marker> marcadoresMunicipio = new ArrayList<>();
-
-    private void mostrarMarcadoresMunicipio(Municipio municipio) {
-        // Limpiar marcadores previos
-        for (Marker m : marcadoresMunicipio) {
-            mapView.removeMarker(m);
-        }
-        marcadoresMunicipio.clear();
-
-        List<Zona> zonasMunicipio = sistemaGestionDesastres.getZonas().stream()
-                .filter(z -> z.getMunicipio().equals(municipio))
-                .toList();
-
-        for (Zona z : zonasMunicipio) {
-            Marker marcador;
-            switch (z.getTipo()) {
-                case REFUGIO -> marcador = Marker.createProvided(Marker.Provided.RED);
-                case CENTRO_AYUDA -> marcador = Marker.createProvided(Marker.Provided.BLUE);
-                case CIUDAD -> marcador = Marker.createProvided(Marker.Provided.GREEN);
-                default -> marcador = null;
-            }
-            marcador.setPosition(new Coordinate(z.getLatitud(), z.getAltitud()));
-            marcador.setVisible(true);
-            mapView.addMarker(marcador);
-            marcadoresMunicipio.add(marcador);
-        }
-    }
-
-    private void inicializarCombos() {
-        if (sistemaGestionDesastres == null) return;
-
-        List<Municipio> municipios = sistemaGestionDesastres.getZonas().stream()
-                .map(Zona::getMunicipio)
-                .distinct()
-                .toList();
-
-        comboMunicipio.setItems(FXCollections.observableArrayList(municipios));
-        comboMunicipio.setConverter(new StringConverter<>() {
-            @Override public String toString(Municipio m) { return m == null ? "" : m.getNombre(); }
-            @Override public Municipio fromString(String s) { return null; }
-        });
-
-        StringConverter<Zona> zonaConverter = new StringConverter<>() {
-            @Override public String toString(Zona z) { return z == null ? "" : z.getNombre(); }
-            @Override public Zona fromString(String s) { return null; }
-        };
-        comboZonaInicio.setConverter(zonaConverter);
-        comboZonaFinal.setConverter(zonaConverter);
-
-        comboMunicipio.setOnAction(evt -> {
-            Municipio seleccionado = comboMunicipio.getSelectionModel().getSelectedItem();
-            if (seleccionado == null) return;
-
-            mostrarMarcadoresMunicipio(seleccionado);
-
-            List<Zona> zonasMunicipio = sistemaGestionDesastres.getZonas().stream()
-                    .filter(z -> z.getMunicipio().equals(seleccionado))
-                    .toList();
-            ObservableList<Zona> obsZonas = FXCollections.observableArrayList(zonasMunicipio);
-            comboZonaInicio.setItems(obsZonas);
-            comboZonaFinal.setItems(obsZonas);
-        });
-    }
-
-    @FXML
-    private void btnMostrarRutaAction(ActionEvent event) {
-        Zona inicio = comboZonaInicio.getSelectionModel().getSelectedItem();
-        Zona destino = comboZonaFinal.getSelectionModel().getSelectedItem();
-
-        if (inicio == null || destino == null) {
-            System.out.println("Debes seleccionar una zona de inicio y una de destino.");
-            return;
-        }
-
-        Ruta ruta = sistemaGestionDesastres.getGrafo().calcularRutaMasCorta(inicio, destino);
-        if (ruta == null) {
-            System.out.println("No hay ruta disponible entre estas zonas.");
-            return;
-        }
-
-        List<Coordinate> coordsRuta = ruta.getParadas().stream()
-                .map(z -> new Coordinate(z.getLatitud(), z.getAltitud()))
-                .toList();
-
-        ServicioRutas.dibujarRutaCarretera(mapView, coordsRuta, true);
-        
-        double latCentro = coordsRuta.stream().mapToDouble(Coordinate::getLatitude).average().orElse(0);
-        double lonCentro = coordsRuta.stream().mapToDouble(Coordinate::getLongitude).average().orElse(0);
-        mapView.setCenter(new Coordinate(latCentro, lonCentro));
-        mapView.setZoom(14);
-    }
 }
