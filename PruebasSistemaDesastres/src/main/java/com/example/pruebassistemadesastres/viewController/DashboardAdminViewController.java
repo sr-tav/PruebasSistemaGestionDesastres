@@ -17,8 +17,10 @@ import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
 import javafx.util.StringConverter;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.text.Normalizer;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class DashboardAdminViewController {
     /**
@@ -121,6 +123,17 @@ public class DashboardAdminViewController {
      * ---------------------------------------VENTANA DE INICIO--------------------------------------
      */
     @FXML private Button btnInicio;
+    @FXML private Button btnDer;
+    @FXML private Button btnIzq;
+    private Municipio municipioActivo;
+    private final List<String> ordenMunicipios = List.of(
+            "Calarca","Armenia","Quimbaya","Montenegro","Tebaida",
+            "Circasia","Salento","Filandia","Cordoba","Buenavista","Pijao","Genova"
+    );
+    private int idxMunicipio = 0;
+    private Map<String, Municipio> cacheMunicipiosPorNombre = new LinkedHashMap<>();
+    private List<String> ordenMunicipiosCambia= ordenMunicipios;
+
     /**
      *
      * @param event
@@ -128,12 +141,113 @@ public class DashboardAdminViewController {
     @FXML
     void clickInicio(ActionEvent event) {
         paneMapa.toFront();
+        btnDer.toFront();
+        btnIzq.toFront();
         PaneInicio.setVisible(true);
         PaneRutas.setVisible(false);
         PaneEstads.setVisible(false);
         PaneAdmin.setVisible(false);
         paneMapa.setPrefWidth(1257);
         paneMapa.setPrefHeight(536);
+        mostrarInicioDeMunicipios();
+        prepararCacheMunicipios();
+    }
+
+    /**
+     *
+     */
+    private void prepararCacheMunicipios() {
+        if (sistemaGestionDesastres == null || sistemaGestionDesastres.getMunicipios() == null) {
+            cacheMunicipiosPorNombre = new LinkedHashMap<>();
+            return;
+        }
+
+        cacheMunicipiosPorNombre = sistemaGestionDesastres.getMunicipios()
+                .stream()
+                .collect(Collectors.toMap(
+                        m -> normalizarNombre(m.getNombre()),
+                        Function.identity(),
+                        (a, b) -> a,
+                        LinkedHashMap::new
+                ));
+    }
+
+    /**
+     *
+     * @param s
+     * @return
+     */
+    private String normalizarNombre(String s) {
+        if (s == null) return "";
+        String t = Normalizer.normalize(s.trim(), Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "");         // quita tildes
+        return t.toLowerCase(Locale.ROOT);
+    }
+    /**
+     *
+     */
+    public void mostrarInicioDeMunicipios() {
+        if (ordenMunicipios.isEmpty()) return;
+
+        String nombre = ordenMunicipios.get(idxMunicipio);
+        municipioActivo = obtenerMunicipioPorNombre(nombre);
+
+        if (municipioActivo != null) {
+            mostrarMarcadoresMunicipio(municipioActivo);
+
+            Coordinate centro = centroDeMunicipio(municipioActivo);
+            if (centro != null) {
+                centrarEn(centro, 14); 
+            } else {
+                System.err.println("No hay centro para el municipio: " + nombre);
+            }
+        } else {
+            System.err.println("No encontré el Municipio en el modelo: " + nombre);
+        }
+    }
+
+    /**
+     *
+     * @param nombreBuscado
+     * @return
+     */
+    private Municipio obtenerMunicipioPorNombre(String nombreBuscado) {
+        String clave = normalizarNombre(nombreBuscado);
+
+        if (cacheMunicipiosPorNombre.containsKey(clave)) {
+            return cacheMunicipiosPorNombre.get(clave);
+        }
+
+        for (Map.Entry<String, Municipio> e : cacheMunicipiosPorNombre.entrySet()) {
+            String k = e.getKey();
+            if (k.contains(clave) || clave.contains(k)) {
+                return e.getValue();
+            }
+        }
+        return null;
+    }
+    /**
+     *
+     * @param event
+     */
+    @FXML
+    void clickDer(ActionEvent event) {
+        System.out.println("accion dere");
+        if (ordenMunicipios.isEmpty()) return;
+        idxMunicipio = (idxMunicipio + 1) % ordenMunicipios.size();
+        mostrarInicioDeMunicipios();
+    }
+
+    /**
+     *
+     * @param event
+     */
+    @FXML
+    void clickIzq(ActionEvent event) {
+        System.out.println("accion izq");
+        if (ordenMunicipios.isEmpty()) return;
+        idxMunicipio = (idxMunicipio - 1 + ordenMunicipios.size()) % ordenMunicipios.size();
+        mostrarInicioDeMunicipios();
     }
     /**
      * ---------------------------------------VENTANA DE ADMIN--------------------------------------
@@ -329,6 +443,45 @@ public class DashboardAdminViewController {
             mapView.addMarker(marcador);
             marcadoresMunicipio.add(marcador);
         }
+    }
+
+    /**
+     *
+     * @param c
+     * @param zoom
+     */
+    private void centrarEn(Coordinate c, int zoom) {
+        if (c == null || mapView == null) return;
+        if (!mapView.initializedProperty().get()) {
+            mapView.initializedProperty().addListener((obs, was, ready) -> {
+                if (ready) { mapView.setCenter(c); mapView.setZoom(zoom); }
+            });
+            return;
+        }
+        mapView.setCenter(c);
+        mapView.setZoom(zoom);
+    }
+
+    /**
+     *
+     * @param m
+     * @return
+     */
+    private Coordinate centroDeMunicipio(Municipio m) {
+        if (m == null) return null;
+        List<Zona> zonasMunicipio = sistemaGestionDesastres.getZonas().stream()
+                .filter(z -> z.getMunicipio() == m)
+                .toList();
+
+        List<Zona> ciudades = zonasMunicipio.stream()
+                .filter(z -> z.getTipo() == TipoZona.CIUDAD)
+                .toList();
+
+        List<Zona> base = ciudades.isEmpty() ? zonasMunicipio : ciudades;
+
+        double lat = base.stream().mapToDouble(Zona::getLatitud).average().orElse(Double.NaN);
+        double lon = base.stream().mapToDouble(Zona::getAltitud).average().orElse(Double.NaN);
+        return new Coordinate(lat, lon);
     }
     @FXML
     void btnActualizarAvanceEvacuaciones(ActionEvent event) {

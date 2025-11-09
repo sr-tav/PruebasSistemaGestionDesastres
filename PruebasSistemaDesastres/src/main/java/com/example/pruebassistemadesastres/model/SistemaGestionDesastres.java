@@ -18,6 +18,7 @@ public class SistemaGestionDesastres {
     private final List<Admin> administradores = new ArrayList<>();
     private final List<Ruta> rutas = new ArrayList<>();
     private final List<Evacuacion> evacuaciones = new ArrayList<>();
+    private final List<Municipio> municipios = new ArrayList<>();
 
 
     private SistemaGestionDesastres() {}
@@ -39,6 +40,9 @@ public class SistemaGestionDesastres {
     public List<Admin> getAdministradores() { return administradores; }
     public List<Ruta> getRutas() { return rutas; }
     public List<Evacuacion> getEvacuaciones() { return evacuaciones; }
+    public List<Municipio> getMunicipios() {
+        return municipios;
+    }
 
 
     public void agregarZona(Zona z) { zonas.add(z); grafo.agregarZona(z); }
@@ -149,7 +153,18 @@ public class SistemaGestionDesastres {
         Municipio pijao = new Municipio("Pijao", 5960);
         Municipio genova = new Municipio("Genova", 7809);
 
-
+        s.getMunicipios().add(armenia);
+        s.getMunicipios().add(calarca);
+        s.getMunicipios().add(quimbaya);
+        s.getMunicipios().add(montenegro);
+        s.getMunicipios().add(tebaida);
+        s.getMunicipios().add(circasia);
+        s.getMunicipios().add(salento);
+        s.getMunicipios().add(filandia);
+        s.getMunicipios().add(cordoba);
+        s.getMunicipios().add(buenavista);
+        s.getMunicipios().add(pijao);
+        s.getMunicipios().add(genova);
 
 
         Zona zCiudad = new Zona("Ciudad Calarcá", TipoZona.CIUDAD, calarca, 50000, 4, 4.533338, -75.640813);
