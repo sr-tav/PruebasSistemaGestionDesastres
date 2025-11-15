@@ -10,14 +10,14 @@ public class NodoDistribuccion {
     private NodoDistribuccion izquierdo;
     private NodoDistribuccion derecho;
 
+    public NodoDistribuccion(String nombre, Map<TipoRecurso, Integer> inventario,
+                             NodoDistribuccion izquierdo, NodoDistribuccion derecho) {
 
-    public NodoDistribuccion(String nombre, Map<TipoRecurso, Integer> inventario, NodoDistribuccion izquierdo, NodoDistribuccion derecho) {
         this.nombre = nombre;
-        this.inventario = new HashMap<>();
-        this.izquierdo = null;
-        this.derecho = null;
+        this.inventario = (inventario != null) ? inventario : new HashMap<>();
+        this.izquierdo = izquierdo;
+        this.derecho = derecho;
     }
-
 
     public void agregarInventario(TipoRecurso tipo, int cantidad) {
         inventario.put(tipo, inventario.getOrDefault(tipo, 0) + cantidad);
