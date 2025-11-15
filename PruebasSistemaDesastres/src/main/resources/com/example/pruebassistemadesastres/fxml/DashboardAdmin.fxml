@@ -15,7 +15,7 @@
 <?import javafx.scene.paint.Stop?>
 <?import javafx.scene.text.Text?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="720.0" prefWidth="1250.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.pruebassistemadesastres.viewController.DashboardAdminViewController">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="720.0" prefWidth="1250.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.pruebassistemadesastres.viewController.DashboardAdminViewController">
    <children>
       <AnchorPane prefHeight="42.0" prefWidth="1250.0" style="-fx-background-color: #141587;">
          <children>
@@ -95,15 +95,15 @@
             </Button>
          </children>
       </AnchorPane>
-      <AnchorPane fx:id="PaneAdmin" layoutY="42.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="678.0" prefWidth="1250.0" style="-fx-background-color: #02032d; -fx-border-color: black;" visible="false">
+      <AnchorPane fx:id="PaneAdmin" layoutY="42.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="678.0" prefWidth="1250.0" style="-fx-background-color: #02032d; -fx-border-color: black;">
          <children>
             <AnchorPane layoutX="872.0" layoutY="358.0" prefHeight="270.0" prefWidth="326.0" style="-fx-background-color: #141587; -fx-border-radius: 30; -fx-background-radius: 30;">
                <children>
                   <TableView fx:id="tablaGestionInventario" layoutX="48.0" layoutY="7.0" prefHeight="256.0" prefWidth="230.0" style="-fx-background-color: #141587; -fx-border-color: white;">
                      <columns>
-                        <TableColumn prefWidth="75.0" style="-fx-background-color: #141587; -fx-border-color: white;" text="RECURSO" />
-                        <TableColumn prefWidth="75.0" style="-fx-background-color: #141587; -fx-border-color: white;" text="CANTIDAD" />
-                        <TableColumn prefWidth="75.0" style="-fx-border-color: white; -fx-background-color: #141587;" styleClass=".fx.border.color" text="ESTADO" />
+                        <TableColumn fx:id="columnaRecurso" prefWidth="75.0" style="-fx-background-color: #141587; -fx-border-color: white;" text="RECURSO" />
+                        <TableColumn fx:id="columnaCantidad" prefWidth="75.0" style="-fx-background-color: #141587; -fx-border-color: white;" text="CANTIDAD" />
+                        <TableColumn fx:id="columnaEstado" prefWidth="75.0" style="-fx-border-color: white; -fx-background-color: #141587;" styleClass=".fx.border.color" text="ESTADO" />
                      </columns>
                   </TableView>
                </children>
@@ -199,7 +199,7 @@
             </Button>
          </children>
       </AnchorPane>
-      <AnchorPane fx:id="PaneInicio" layoutX="-5.0" layoutY="39.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="684.0" prefWidth="1257.0" style="-fx-background-color: #02032d; -fx-border-color: black;">
+      <AnchorPane fx:id="PaneInicio" layoutX="-5.0" layoutY="39.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="684.0" prefWidth="1257.0" style="-fx-background-color: #02032d; -fx-border-color: black;" visible="false">
          <children>
             <Button layoutX="1058.0" layoutY="27.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="31.0" style="-fx-border-radius: 30; -fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-width: 2;" text="¡" textFill="WHITE" />
             <Button fx:id="simulacro" layoutX="1102.0" layoutY="29.0" mnemonicParsing="false" onAction="#btnSimulacro" prefHeight="30.0" prefWidth="110.0" style="-fx-border-radius: 30; -fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-width: 2;" text="SIMULACRO" textFill="WHITE" />
@@ -379,7 +379,7 @@
             </Button>
          </children>
       </AnchorPane>
-      <Pane fx:id="paneMapa" layoutX="-4.0" layoutY="115.0" prefHeight="536.0" prefWidth="1257.0">
+      <Pane fx:id="paneMapa" layoutX="-4.0" layoutY="115.0" prefHeight="536.0" prefWidth="1257.0" visible="false">
          <children>
             <Button fx:id="btnIzq" layoutX="32.0" layoutY="171.0" mnemonicParsing="false" onAction="#clickIzq" prefHeight="45.0" prefWidth="53.0" styleClass="btn_SelectorMunicipio" stylesheets="@../css/DashboardStyle.css">
                <graphic>

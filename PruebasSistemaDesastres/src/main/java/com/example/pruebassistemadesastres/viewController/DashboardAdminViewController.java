@@ -10,7 +10,9 @@ import javafx.fxml.FXML;
 import javafx.scene.chart.PieChart;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
@@ -353,7 +355,11 @@ public class DashboardAdminViewController {
     @FXML private Button recursosInicio;
     @FXML private Button salirAdmin;
     @FXML private Button simulacro;
-    @FXML private TableView<?> tablaGestionInventario;
+    @FXML private TableView<RecursoInventarioView> tablaGestionInventario;
+    @FXML private TableColumn<RecursoInventarioView, String> columnaRecurso;
+    @FXML private TableColumn<RecursoInventarioView, Integer> columnaCantidad;
+    @FXML private TableColumn<RecursoInventarioView, String> columnaEstado;
+
     private final List<Marker> marcadoresMunicipio = new ArrayList<>();
 
     /**
