@@ -20,7 +20,6 @@ public class SistemaGestionDesastres {
     private final List<Evacuacion> evacuaciones = new ArrayList<>();
     private final List<Municipio> municipios = new ArrayList<>();
 
-
     private SistemaGestionDesastres() {}
 
     //Obtener la instancia unica del sistema
@@ -682,4 +681,30 @@ public class SistemaGestionDesastres {
         s.agregarAdmin(new Admin("Admin","1234"));
         return s;
     }
+
+
+    public void distribuirRecurso(Recurso r, NodoDistribuccion nodo) {
+        if (r.getEstado() == EstadoRecurso.DISPONIBLE) {
+            nodo.agregarInventario(r.getTipo(), r.getCantidad());
+            r.cambiarEstado(EstadoRecurso.EN_RUTA);
+            System.out.println("Distribuyendo " + r.getCantidad() + " de " + r.getTipo() + " a " + nodo.getNombre());
+        }
+    }
+
+    // Cuando el recurso llega
+    public void recibirRecurso(Recurso r, NodoDistribuccion nodo) {
+        if (r.getEstado() == EstadoRecurso.EN_RUTA) {
+            r.cambiarEstado(EstadoRecurso.ASIGNADO);
+            nodo.agregarInventario(r.getTipo(), r.getCantidad());
+            System.out.println("Recurso " + r.getId() + " entregado en " + nodo.getNombre());
+        }
+    }
+
+    public void mostrarInventario(NodoDistribuccion nodo) {
+        System.out.println("Inventario de " + nodo.getNombre());
+        nodo.getInventario().forEach((tipo, cantidad) ->
+                System.out.println(tipo + ": " + cantidad)
+        );
+    }
+
 }

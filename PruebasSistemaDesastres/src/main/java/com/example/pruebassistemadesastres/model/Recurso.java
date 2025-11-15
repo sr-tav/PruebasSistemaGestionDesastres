@@ -13,6 +13,10 @@ public class Recurso extends EntidadBase {
         this.estado = estado;
     }
 
+    public void cambiarEstado(EstadoRecurso nuevoEstado) {
+        this.estado = nuevoEstado;
+    }
+
     public String getIdRecurso() { return idRecurso; }
     public TipoRecurso getTipo() { return tipo; }
     public int getCantidad() { return cantidad; }
