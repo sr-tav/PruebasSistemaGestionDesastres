@@ -80,6 +80,9 @@ public class DashboardAdminViewController {
                         true // limpiarPrevias
                 );
                 inicializarCombos();
+                columnaRecurso.setCellValueFactory(new PropertyValueFactory<>("recurso"));
+                columnaCantidad.setCellValueFactory(new PropertyValueFactory<>("cantidad"));
+                columnaEstado.setCellValueFactory(new PropertyValueFactory<>("estado"));
             }
         });
     }
@@ -496,6 +499,25 @@ public class DashboardAdminViewController {
 
     @FXML
     void btnActualizarInventarioAdmin(ActionEvent event) {
+        tablaGestionInventario.getItems().clear();
+
+        ArbolDistribuccion arbol = sistemaGestionDesastres.getArbolDistribuccion();
+        if (arbol == null) {
+            System.out.println("Árbol no inicializado.");
+            return;
+        }
+
+        List<Recurso> recursos = arbol.obtenerTodosLosRecursosDetalle();
+
+        for (Recurso r : recursos) {
+            tablaGestionInventario.getItems().add(
+                    new RecursoInventarioView(
+                            r.getTipo().name(),
+                            r.getCantidad(),
+                            r.getEstado().name()
+                    )
+            );
+        }
     }
 
     @FXML

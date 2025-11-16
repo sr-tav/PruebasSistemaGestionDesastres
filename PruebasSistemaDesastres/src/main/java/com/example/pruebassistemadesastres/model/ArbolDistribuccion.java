@@ -1,56 +1,74 @@
 package com.example.pruebassistemadesastres.model;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 public class ArbolDistribuccion {
-
     private NodoDistribuccion raiz;
+    private List<NodoDistribuccion> nodos = new ArrayList<>();
 
-    public ArbolDistribuccion(String nombreRaiz) {
-        this.raiz = new NodoDistribuccion(nombreRaiz);
-    }
+    public ArbolDistribuccion() {}
 
     public NodoDistribuccion getRaiz() {
         return raiz;
     }
 
-    // Inserción basada en orden alfabético del nombre
-    public void insertarNodo(String nombre) {
-        raiz = insertarRec(raiz, nombre);
+
+    public void poblarDesdeZonas(List<Zona> zonas) {
+        for (Zona z : zonas) {
+            NodoDistribuccion nodo = new NodoDistribuccion(z.getNombre());
+            nodos.add(nodo);
+        }
+
+        // formamos la raíz si hay datos
+        if (!nodos.isEmpty()) {
+            raiz = nodos.get(0);
+        }
+
+        // Enlazamos de manera simple en árbol binario
+        for (int i = 0; i < nodos.size(); i++) {
+            int left = 2 * i + 1;
+            int right = 2 * i + 2;
+
+            if (left < nodos.size())
+                nodos.get(i).setIzquierdo(nodos.get(left));
+
+            if (right < nodos.size())
+                nodos.get(i).setDerecho(nodos.get(right));
+        }
     }
 
-    private NodoDistribuccion insertarRec(NodoDistribuccion actual, String nombre) {
-        if (actual == null)
-            return new NodoDistribuccion(nombre);
+    public void distribuirRecursosDetalle(List<Recurso> recursos) {
+        if (nodos.isEmpty()) return;
 
-        if (nombre.compareTo(actual.getNombre()) < 0)
-            actual.setIzquierdo(insertarRec(actual.getIzquierdo(), nombre));
-        else
-            actual.setDerecho(insertarRec(actual.getDerecho(), nombre));
-
-        return actual;
+        int index = 0;
+        for (Recurso r : recursos) {
+            nodos.get(index).agregarRecurso(r);
+            index = (index + 1) % nodos.size();
+        }
     }
 
-    // Buscar un nodo por nombre
-    public NodoDistribuccion buscar(String nombre) {
-        return buscarRec(raiz, nombre);
+    public List<Recurso> obtenerTodosLosRecursosDetalle() {
+        List<Recurso> lista = new ArrayList<>();
+
+        for (NodoDistribuccion nodo : nodos) {
+            lista.addAll(nodo.getRecursos());
+        }
+
+        return lista;
     }
 
-    private NodoDistribuccion buscarRec(NodoDistribuccion actual, String nombre) {
-        if (actual == null) return null;
-
-        if (actual.getNombre().equals(nombre)) return actual;
-
-        return nombre.compareTo(actual.getNombre()) < 0 ?
-                buscarRec(actual.getIzquierdo(), nombre) :
-                buscarRec(actual.getDerecho(), nombre);
-    }
-    // Métodos de inventario desde el árbol
-    public void agregarRecurso(String nodo, TipoRecurso tipo, int cantidad) {
-        NodoDistribuccion n = buscar(nodo);
-        if (n != null) n.agregarInventario(tipo, cantidad);
+    public void setRaiz(NodoDistribuccion raiz) {
+        this.raiz = raiz;
     }
 
-    public void retirarRecurso(String nodo, TipoRecurso tipo, int cantidad) {
-        NodoDistribuccion n = buscar(nodo);
-        if (n != null) n.retirarInventario(tipo, cantidad);
+    public List<NodoDistribuccion> getNodos() {
+        return nodos;
+    }
+
+    public void setNodos(List<NodoDistribuccion> nodos) {
+        this.nodos = nodos;
     }
 }

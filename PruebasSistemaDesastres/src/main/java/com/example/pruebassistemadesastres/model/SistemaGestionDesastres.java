@@ -88,6 +88,16 @@ public class SistemaGestionDesastres {
         return "NO_EXISTE";
     }
 
+    private ArbolDistribuccion arbolDistribuccion;
+
+    public ArbolDistribuccion getArbolDistribuccion() {
+        return arbolDistribuccion;
+    }
+
+    public void setArbolDistribuccion(ArbolDistribuccion arbolDistribuccion) {
+        this.arbolDistribuccion = arbolDistribuccion;
+    }
+
     //APARTADO ASIGNACION DE RECURSOS
     public boolean asignarRecursoAZona(TipoRecurso tipo, int cantidad, Zona zona) {
         int totalDisponible = 0;
@@ -677,33 +687,20 @@ public class SistemaGestionDesastres {
         s.agregarOperador(new OperadorEmergencia("Op1", "1234"));
         s.agregarOperador(new OperadorEmergencia("Op2", "1234"));
         s.agregarAdmin(new Admin("Admin","1234"));
+
+        ArbolDistribuccion arbol = new ArbolDistribuccion();
+
+        arbol.poblarDesdeZonas(s.getZonas());
+
+        arbol.distribuirRecursosDetalle(s.getRecursos());
+
+        s.setArbolDistribuccion(arbol);
+
         return s;
     }
 
 
-    public void distribuirRecurso(Recurso r, NodoDistribuccion nodo) {
-        if (r.getEstado() == EstadoRecurso.DISPONIBLE) {
-            nodo.agregarInventario(r.getTipo(), r.getCantidad());
-            r.cambiarEstado(EstadoRecurso.EN_RUTA);
-            System.out.println("Distribuyendo " + r.getCantidad() + " de " + r.getTipo() + " a " + nodo.getNombre());
-        }
-    }
 
-    // Cuando el recurso llega
-    public void recibirRecurso(Recurso r, NodoDistribuccion nodo) {
-        if (r.getEstado() == EstadoRecurso.EN_RUTA) {
-            r.cambiarEstado(EstadoRecurso.ASIGNADO);
-            nodo.agregarInventario(r.getTipo(), r.getCantidad());
-            System.out.println("Recurso " + r.getId() + " entregado en " + nodo.getNombre());
-        }
-    }
-
-    public void mostrarInventario(NodoDistribuccion nodo) {
-        System.out.println("Inventario de " + nodo.getNombre());
-        nodo.getInventario().forEach((tipo, cantidad) ->
-                System.out.println(tipo + ": " + cantidad)
-        );
-    }
 
     public Map<TipoRecurso, Integer> getRecursosDistribuidos() {
         Map<TipoRecurso, Integer> totales = new HashMap<>();
