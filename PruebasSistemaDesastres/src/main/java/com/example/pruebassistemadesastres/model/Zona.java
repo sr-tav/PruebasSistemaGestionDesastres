@@ -16,6 +16,8 @@ public class Zona extends EntidadBase{
     private final List<Equipo> equipos = new ArrayList<>();
     private double latitud;
     private double altitud;
+    private int personasTotales;
+    private int personasEvacuadas;
 
 
     public Zona(String nombre, TipoZona tipo, Municipio municipio, int habitantes, int nivelRiesgo, double latitud, double altitud) {
@@ -42,4 +44,15 @@ public class Zona extends EntidadBase{
     public void setLatitud(double latitud) { this.latitud = latitud; }
     public double getAltitud() { return altitud; }
     public void setAltitud(double altitud) { this.altitud = altitud; }
+    public int getPersonasTotales() {
+        return this.personasTotales;
+    }
+
+    public int getPersonasEvacuadas() {
+        return this.personasEvacuadas;
+    }
+
+    public void setPersonasEvacuadas(int personasEvacuadas) {
+        this.personasEvacuadas = personasEvacuadas;
+    }
 }

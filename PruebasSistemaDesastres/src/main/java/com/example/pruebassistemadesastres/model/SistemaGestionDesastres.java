@@ -1,9 +1,7 @@
 package com.example.pruebassistemadesastres.model;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.PriorityQueue;
+
+import java.util.*;
 
 public class SistemaGestionDesastres {
 
@@ -706,5 +704,31 @@ public class SistemaGestionDesastres {
                 System.out.println(tipo + ": " + cantidad)
         );
     }
+
+    public Map<TipoRecurso, Integer> getRecursosDistribuidos() {
+        Map<TipoRecurso, Integer> totales = new HashMap<>();
+        for (Zona zona : zonas) {
+            for (Map.Entry<TipoRecurso, Integer> entry : zona.getInventario().entrySet()) {
+                TipoRecurso tipo = entry.getKey();
+                int cantidad = entry.getValue();
+                totales.put(tipo, totales.getOrDefault(tipo, 0) + cantidad);
+            }
+        }
+        return totales;
+    }
+
+
+    public Map<String, Double> getAvanceEvacuaciones() {
+        Map<String, Double> avances = new HashMap<>();
+        for (Zona zona : zonas) {
+            int evacuadas = zona.getPersonasEvacuadas();
+            int totales = zona.getPersonasTotales();
+            double porcentaje = (totales > 0) ? (double) evacuadas / totales : 0.0;
+            avances.put(zona.getNombre(), Math.min(porcentaje, 1.0));
+        }
+        return avances;
+    }
+
+
 
 }

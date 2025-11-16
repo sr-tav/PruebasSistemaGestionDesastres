@@ -43,7 +43,6 @@ public class ArbolDistribuccion {
                 buscarRec(actual.getIzquierdo(), nombre) :
                 buscarRec(actual.getDerecho(), nombre);
     }
-
     // Métodos de inventario desde el árbol
     public void agregarRecurso(String nodo, TipoRecurso tipo, int cantidad) {
         NodoDistribuccion n = buscar(nodo);

@@ -496,12 +496,36 @@ public class DashboardAdminViewController {
 
     @FXML
     void btnActualizarInventarioAdmin(ActionEvent event) {
-
     }
 
     @FXML
     void btnActualizarRecursosDistribuidos(ActionEvent event) {
+        if (sistemaGestionDesastres == null) return;
 
+        Map<TipoRecurso, Integer> totalesRecursos = sistemaGestionDesastres.getRecursosDistribuidos();
+
+
+        if (totalesRecursos.isEmpty()) {
+            graficoRecursosDistribuidos.setData(FXCollections.emptyObservableList());
+            return;
+        }
+
+        int totalGeneral = totalesRecursos.values().stream().mapToInt(Integer::intValue).sum();
+
+
+        ObservableList<PieChart.Data> datos = FXCollections.observableArrayList();
+        for (Map.Entry<TipoRecurso, Integer> entry : totalesRecursos.entrySet()) {
+            TipoRecurso tipo = entry.getKey();
+            int cantidad = entry.getValue();
+            double porcentaje = (cantidad * 100.0) / totalGeneral;
+
+            datos.add(new PieChart.Data(tipo.toString() + " (" + String.format("%.1f%%", porcentaje) + ")", cantidad));
+        }
+
+        graficoRecursosDistribuidos.setTitle("Recursos Distribuidos por Tipo");
+        graficoRecursosDistribuidos.setData(datos);
+        graficoRecursosDistribuidos.setLabelsVisible(true);
+        graficoRecursosDistribuidos.setLegendVisible(true);
     }
 
     @FXML
