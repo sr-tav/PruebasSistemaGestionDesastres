@@ -19,7 +19,6 @@ public class Zona extends EntidadBase{
     private int personasTotales;
     private int personasEvacuadas;
 
-
     public Zona(String nombre, TipoZona tipo, Municipio municipio, int habitantes, int nivelRiesgo, double latitud, double altitud) {
         this.nombre = nombre;
         this.tipo = tipo;

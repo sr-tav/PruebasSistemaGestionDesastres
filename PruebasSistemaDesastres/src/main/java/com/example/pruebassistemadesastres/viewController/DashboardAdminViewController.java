@@ -27,6 +27,9 @@ public class DashboardAdminViewController {
     /**
      * ---------------------------------------ESPACIO DE INICIALIZACION--------------------------------------
      */
+    private Zona desastreActivo;
+    private Marker markerDesastre;
+    private MapCircle cCritico, cModerado, cEstable;
     private SistemaGestionDesastres sistemaGestionDesastres;
     private MapView mapView;
     private VBox legendBox;
@@ -37,13 +40,6 @@ public class DashboardAdminViewController {
     @FXML private AnchorPane PaneInicio;
     @FXML private AnchorPane PaneRutas;
     @FXML private AnchorPane paneMapa;
-    private Marker mDesastre;
-    private Marker mHospital;
-    private CoordinateLine ruta;
-    private MapCircle zonaCritica;
-    private MapCircle zonaModerada;
-    private MapCircle zonaEstable;
-    private MapLabel lblCalarca;
     private enum ModoMapa { COMPACTO, AMPLIO }
     private ModoMapa modoActual = ModoMapa.AMPLIO;
 
@@ -71,22 +67,11 @@ public class DashboardAdminViewController {
         mapView.initializedProperty().addListener((obs, was, ready) -> {
             if (ready) {
                 configurarCentro();
-                crearOverlays();
-
-                // Añadirlos justo después del primer render
-                Platform.runLater(this::agregarOverlaysAlMapa);
-                // >>> Pinta la ruta real respetando carreteras <<<
-                Coordinate desastre = new Coordinate(4.53242, -75.64957);
-                Coordinate hospital = new Coordinate(4.533338, -75.640813);
-                com.example.pruebassistemadesastres.model.ServicioRutas.dibujarRutaCarretera(
-                        mapView,
-                        java.util.List.of(hospital, desastre),
-                        true // limpiarPrevias
-                );
                 inicializarCombos();
                 columnaRecurso.setCellValueFactory(new PropertyValueFactory<>("recurso"));
                 columnaCantidad.setCellValueFactory(new PropertyValueFactory<>("cantidad"));
                 columnaEstado.setCellValueFactory(new PropertyValueFactory<>("estado"));
+                hookOverlayReapplier();
             }
         });
         modoAmplio();
@@ -339,6 +324,43 @@ public class DashboardAdminViewController {
         }
         return null;
     }
+
+    /**
+     *
+     * @param event
+     */
+    @FXML
+    void clickSimulacro(ActionEvent event) {
+        if (sistemaGestionDesastres == null) return;
+
+        // 1) Limpiar overlays previos (si había un desastre activo)
+        limpiarOverlaysDesastre();
+
+        // 2) Crear uno nuevo en el modelo
+        desastreActivo = sistemaGestionDesastres.iniciarSimulacro();
+        if (desastreActivo == null) return;
+
+        // 3) Pintar marker y círculos
+        Coordinate c = new Coordinate(desastreActivo.getLatitud(), desastreActivo.getAltitud());
+        try {
+            markerDesastre = Marker.createProvided(Marker.Provided.ORANGE);
+        } catch (Throwable t) {
+            markerDesastre = Marker.createProvided(Marker.Provided.RED);
+        }
+        markerDesastre.setPosition(c).setVisible(true);
+        mapView.addMarker(markerDesastre);
+
+        cCritico  = new MapCircle(c, 300).setFillColor(Color.color(1.0, 0.3, 0.0, 0.25)).setVisible(true);
+        cModerado = new MapCircle(c, 600).setFillColor(Color.color(1.0, 0.6, 0.0, 0.18)).setVisible(true);
+        cEstable  = new MapCircle(c, 900).setFillColor(Color.color(1.0, 0.8, 0.0, 0.12)).setVisible(true);
+        mapView.addMapCircle(cCritico);
+        mapView.addMapCircle(cModerado);
+        mapView.addMapCircle(cEstable);
+
+        // 4) Centrar y refrescar marcadores/leyenda del municipio del desastre
+        centrarEn(c, 15);
+        mostrarMarcadoresMunicipio(desastreActivo.getMunicipio());
+    }
     /**
      *
      * @param event
@@ -464,7 +486,7 @@ public class DashboardAdminViewController {
     @FXML private Button minimizarAdmin;
     @FXML private Button recursosInicio;
     @FXML private Button salirAdmin;
-    @FXML private Button simulacro;
+    @FXML private Button btnSimulacro;
     @FXML private TableView<RecursoInventarioView> tablaGestionInventario;
     @FXML private TableColumn<RecursoInventarioView, String> columnaRecurso;
     @FXML private TableColumn<RecursoInventarioView, Integer> columnaCantidad;
@@ -479,56 +501,6 @@ public class DashboardAdminViewController {
         Coordinate calarca = new Coordinate(4.5333, -75.6500);
         mapView.setCenter(calarca);
         mapView.setZoom(14);
-    }
-    /**
-     *
-     */
-    private void crearOverlays() {
-        Coordinate calarca  = new Coordinate(4.5333, -75.6500);
-        Coordinate desastre = new Coordinate(4.53242, -75.64957);
-        Coordinate hospital = new Coordinate(4.533338, -75.640813);
-
-        mDesastre = Marker.createProvided(Marker.Provided.BLUE)
-                .setPosition(desastre)
-                .setVisible(true);
-
-        mHospital = Marker.createProvided(Marker.Provided.RED)
-                .setPosition(hospital)
-                .setVisible(true);
-
-
-        zonaCritica = new MapCircle(desastre, 250)
-                .setFillColor(Color.color(1, 0, 0.0, 0.5))
-                .setVisible(true);
-        zonaModerada = new MapCircle(desastre, 500)
-                .setFillColor(Color.color(1.0, 0.5, 0.0, 0.35))
-                .setVisible(true);
-        zonaEstable = new MapCircle(desastre, 1000)
-                .setFillColor(Color.color(0.5, 1, 0.0, 0.15))
-                .setVisible(true);
-
-        lblCalarca = new MapLabel("DesastreNaturalRandom")
-                .setPosition(desastre)
-                .setVisible(true);
-
-    }
-
-    /**
-     *
-     */
-    private void agregarOverlaysAlMapa() {
-        // Re-agrega por si el WebView hizo un refresh de capas
-        mapView.addMarker(mDesastre);
-        mapView.addMarker(mHospital);
-        mapView.addMapCircle(zonaCritica);
-        mapView.addMapCircle(zonaModerada);
-        mapView.addMapCircle(zonaEstable);
-        mapView.addLabel(lblCalarca);
-        ServicioRutas.dibujarRutaCarretera(
-                mapView,
-                List.of(mDesastre.getPosition(), mHospital.getPosition()),
-                /*limpiarPrevias*/ true
-        );
     }
 
     /**
@@ -546,19 +518,31 @@ public class DashboardAdminViewController {
                 .toList();
 
         for (Zona z : zonasMunicipio) {
-            Marker marcador;
-            switch (z.getTipo()) {
+            Marker marcador = switch (z.getTipo()) {
                 case REFUGIO -> marcador = Marker.createProvided(Marker.Provided.RED);
                 case CENTRO_AYUDA -> marcador = Marker.createProvided(Marker.Provided.BLUE);
                 case CIUDAD -> marcador = Marker.createProvided(Marker.Provided.GREEN);
-                default -> marcador = null;
-            }
+                default-> null;
+            };
+            if (marcador == null) continue;
             marcador.setPosition(new Coordinate(z.getLatitud(), z.getAltitud()));
             marcador.setVisible(true);
             mapView.addMarker(marcador);
             marcadoresMunicipio.add(marcador);
         }
-        refrescarLeyenda(zonasMunicipio);
+        if (desastreActivo != null && desastreActivo.getMunicipio().equals(municipio)) {
+            if (markerDesastre != null) mapView.removeMarker(markerDesastre);
+            try {
+                markerDesastre = Marker.createProvided(Marker.Provided.ORANGE);
+            } catch (Throwable t) {
+                markerDesastre = Marker.createProvided(Marker.Provided.RED);
+            }
+            markerDesastre.setPosition(new Coordinate(desastreActivo.getLatitud(), desastreActivo.getAltitud()));
+            markerDesastre.setVisible(true);
+            mapView.addMarker(markerDesastre);
+        }
+        List<Zona> paraLeyenda = zonasMunicipio;
+        refrescarLeyenda(paraLeyenda);
     }
 
     /**
@@ -684,6 +668,7 @@ public class DashboardAdminViewController {
             case CIUDAD       -> Color.web("#2ecc71"); // verde
             case REFUGIO      -> Color.web("#e74c3c"); // rojo
             case CENTRO_AYUDA -> Color.web("#3498db"); // azul
+            case DESASTRE     -> Color.web("#f39c12"); // naranja
             default           -> Color.web("#bdc3c7"); // gris fallback
         };
     }
@@ -707,7 +692,7 @@ public class DashboardAdminViewController {
                 .collect(Collectors.groupingBy(Zona::getTipo));
 
         // Orden de tipos fijo (Ciudad, Refugio, Centro de ayuda)
-        List<TipoZona> ordenTipos = List.of(TipoZona.CIUDAD, TipoZona.REFUGIO, TipoZona.CENTRO_AYUDA);
+        List<TipoZona> ordenTipos = List.of(TipoZona.DESASTRE, TipoZona.CIUDAD, TipoZona.REFUGIO, TipoZona.CENTRO_AYUDA);
 
         for (TipoZona tipo : ordenTipos) {
             List<Zona> lista = porTipo.get(tipo);
@@ -727,6 +712,7 @@ public class DashboardAdminViewController {
                 case CIUDAD       -> "Ciudad";
                 case REFUGIO      -> "Refugio";
                 case CENTRO_AYUDA -> "Centro de ayuda";
+                case DESASTRE -> "Desastre";
                 default           -> tipo.name();
             } + " (" + lista.size() + ")");
             lbl.setTextFill(Color.WHITE);
@@ -788,7 +774,28 @@ public class DashboardAdminViewController {
         if (btnIzq != null) btnIzq.toFront();
     }
 
+    private void hookOverlayReapplier() {
+        // Reaplica (remove+add) para sobrevivir a refrescos internos del WebView
+        mapView.zoomProperty().addListener((o, a, b) -> reaplicarOverlaysDesastre());
+        mapView.mapTypeProperty().addListener((o, a, b) -> reaplicarOverlaysDesastre());
+    }
+    private void reaplicarOverlaysDesastre() {
+        if (desastreActivo == null) return;
+        if (markerDesastre != null) {
+            mapView.removeMarker(markerDesastre);
+            mapView.addMarker(markerDesastre);
+        }
+        if (cCritico != null) { mapView.removeMapCircle(cCritico); mapView.addMapCircle(cCritico); }
+        if (cModerado != null) { mapView.removeMapCircle(cModerado); mapView.addMapCircle(cModerado); }
+        if (cEstable != null) { mapView.removeMapCircle(cEstable); mapView.addMapCircle(cEstable); }
+    }
 
+    private void limpiarOverlaysDesastre() {
+        if (markerDesastre != null) { mapView.removeMarker(markerDesastre); markerDesastre = null; }
+        if (cCritico != null)  { mapView.removeMapCircle(cCritico);  cCritico = null; }
+        if (cModerado != null) { mapView.removeMapCircle(cModerado); cModerado = null; }
+        if (cEstable != null)  { mapView.removeMapCircle(cEstable);  cEstable = null; }
+    }
     @FXML
     void btnActualizarRutas(ActionEvent event) {
 
@@ -826,11 +833,6 @@ public class DashboardAdminViewController {
 
     @FXML
     void btnSalirAdmin(ActionEvent event) {
-
-    }
-
-    @FXML
-    void btnSimulacro(ActionEvent event) {
 
     }
     /**

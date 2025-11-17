@@ -6,6 +6,8 @@ import java.util.*;
 public class SistemaGestionDesastres {
 
     //Listas principales del sistema
+    private Zona desastreActivo;
+    private Zona ultimoDesastre;
     private static SistemaGestionDesastres instancia;
     private final GrafoDirigido grafo = new GrafoDirigido();
     private final List<Zona> zonas = new ArrayList<>();
@@ -40,6 +42,7 @@ public class SistemaGestionDesastres {
     public List<Municipio> getMunicipios() {
         return municipios;
     }
+    public Zona getDesastreActivo() { return desastreActivo; }
 
 
     public void agregarZona(Zona z) { zonas.add(z); grafo.agregarZona(z); }
@@ -139,6 +142,100 @@ public class SistemaGestionDesastres {
         }
     }
 
+    /**
+     * Metodo para iniciar un desastre natural simulado
+     */
+    public Zona iniciarSimulacro() {
+        if (municipios.isEmpty()) return null;
+
+        // 1) Municipio al azar
+        Random rnd = new Random();
+        Municipio muni = municipios.get(rnd.nextInt(municipios.size()));
+
+        // 2) Centro base
+        List<Zona> zonasMuni = zonas.stream()
+                .filter(z -> z.getMunicipio().equals(muni))
+                .toList();
+
+        if (zonasMuni.isEmpty()) return null;
+
+        // Prioriza CIUDAD como centro; si no, usa promedio
+        double baseLat, baseLon;
+        Optional<Zona> ciudad = zonasMuni.stream()
+                .filter(z -> z.getTipo() == TipoZona.CIUDAD)
+                .findFirst();
+
+        if (ciudad.isPresent()) {
+            baseLat = ciudad.get().getLatitud();
+            baseLon = ciudad.get().getAltitud();
+        } else {
+            baseLat = zonasMuni.stream().mapToDouble(Zona::getLatitud).average().orElse(0);
+            baseLon = zonasMuni.stream().mapToDouble(Zona::getAltitud).average().orElse(0);
+        }
+
+        // 3) Muestreo en anillo periférico (evita el centro)
+        double rMinKm = 1.5;   // mínimo 1.5 km fuera del centro
+        double rMaxKm = 3;   // hasta 7 km (ajusta a gusto)
+        double separacionMinKm = 0.6; // no pegue a otras zonas (ajusta a gusto)
+
+        double lat = baseLat, lon = baseLon;
+        boolean aceptado = false;
+
+        for (int intento = 0; intento < 20 && !aceptado; intento++) {
+            // bearing 0..2π, distancia uniforme en el anillo
+            double bearing = rnd.nextDouble() * Math.PI * 2;
+            double dist = rMinKm + rnd.nextDouble() * (rMaxKm - rMinKm);
+
+            double[] nuevo = offsetKm(baseLat, baseLon, bearing, dist);
+            lat = nuevo[0];
+            lon = nuevo[1];
+            final double latF = lat;
+            final double lonF = lon;
+            // 4) Comprueba separación mínima respecto a zonas existentes en el municipio
+            double minDist = zonasMuni.stream()
+                    .mapToDouble(z -> haversineKm(latF, lonF, z.getLatitud(), z.getAltitud()))
+                    .min().orElse(Double.MAX_VALUE);
+
+            if (minDist >= separacionMinKm) {
+                aceptado = true;
+                break;
+            }
+        }
+        int habitantes = rnd.nextInt(101);
+        // 5) Construye/Registra la zona de desastre
+        String nombre = "Desastre " + muni.getNombre() + " #" + (int)(1000 + rnd.nextInt(9000));
+        Zona zDesastre = new Zona(nombre, TipoZona.DESASTRE, muni, habitantes, 5, lat, lon);
+
+        // Si quieres mantener 1 solo activo, remueve el anterior del modelo
+        if (ultimoDesastre != null) {
+            zonas.remove(ultimoDesastre);
+            grafo.eliminarZona(ultimoDesastre); // ← agrega este método en tu grafo o ignora si no hace falta
+        }
+        ultimoDesastre = zDesastre;
+
+        agregarZona(zDesastre); // ya mete al grafo
+
+        return zDesastre;
+    }
+
+    private static double[] offsetKm(double lat, double lon, double bearingRad, double distKm) {
+        double latRad = Math.toRadians(lat);
+        double dLat = distKm / 110.574; // ~km por grado lat
+        double dLon = distKm / (111.320 * Math.cos(latRad)); // ~km por grado lon (corrige con lat)
+        double newLat = lat + dLat * Math.cos(bearingRad);
+        double newLon = lon + dLon * Math.sin(bearingRad);
+        return new double[]{newLat, newLon};
+    }
+    private static double haversineKm(double lat1, double lon1, double lat2, double lon2) {
+        double R = 6371.0;
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(dLat/2)*Math.sin(dLat/2)
+                + Math.cos(Math.toRadians(lat1))*Math.cos(Math.toRadians(lat2))
+                * Math.sin(dLon/2)*Math.sin(dLon/2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return R * c;
+    }
     /**
      * Metodo para crear un sistema de gestion con datos quemados
      * @return

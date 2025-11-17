@@ -8,3 +8,23 @@
 .btn_Login{
     -fx-background-color:  #3346d4;
 }
+.btn_Simulacro{
+    -fx-background-color: #e81a1a;
+    -fx-background-radius: 5;
+}
+.btn_Simulacro:hover{
+    -fx-background-color: #ff5252;
+    -fx-background-radius: 5;
+}
+.btn_cerrar{
+    -fx-background-color: #2b52a6;
+}
+.btn_cerrar:hover{
+    -fx-background-color: #e81a1a;
+}
+.btn_minimizar{
+    -fx-background-color: #2b52a6;
+}
+.btn_minimizar:hover{
+    -fx-background-color: #3c70c1;
+}

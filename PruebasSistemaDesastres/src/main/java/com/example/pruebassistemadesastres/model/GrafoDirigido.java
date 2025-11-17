@@ -19,7 +19,9 @@ public class GrafoDirigido {
     public Set<Zona> zonas() {
         return adyacencia.keySet();
     }
-
+    public void eliminarZona(Zona z) {
+        adyacencia.remove(z);
+    }
     //Dijkstra
     public Ruta calcularRutaMasCorta(Zona origen, Zona destino) {
 
