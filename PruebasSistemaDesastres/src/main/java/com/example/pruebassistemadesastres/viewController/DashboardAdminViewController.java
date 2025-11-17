@@ -7,16 +7,15 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.chart.PieChart;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.Region;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
+import javafx.scene.shape.Circle;
 import javafx.util.StringConverter;
 
 import java.text.Normalizer;
@@ -30,11 +29,14 @@ public class DashboardAdminViewController {
      */
     private SistemaGestionDesastres sistemaGestionDesastres;
     private MapView mapView;
+    private VBox legendBox;
+    private ScrollPane legendScroll;
+    private StackPane overlay;
     @FXML private AnchorPane PaneAdmin;
     @FXML private AnchorPane PaneEstads;
     @FXML private AnchorPane PaneInicio;
     @FXML private AnchorPane PaneRutas;
-    @FXML private Pane paneMapa;
+    @FXML private AnchorPane paneMapa;
     private Marker mDesastre;
     private Marker mHospital;
     private CoordinateLine ruta;
@@ -52,15 +54,16 @@ public class DashboardAdminViewController {
     private void initialize() {
         mapView = new MapView();
         mapView.setMapType(MapType.OSM);
-        mapView.setMaxSize(1920, 1080);     // o 2560x1440 si necesitas más
+        mapView.setMaxSize(1920, 1080);
         mapView.setMinSize(2, 2);
         paneMapa.setMinSize(2, 2);
 
         paneMapa.getChildren().add(mapView);
-        mapView.setPrefSize(Region.USE_COMPUTED_SIZE, Region.USE_COMPUTED_SIZE);
-        mapView.prefWidthProperty().bind(paneMapa.widthProperty());
-        mapView.prefHeightProperty().bind(paneMapa.heightProperty());
-        modoAmplio();
+        AnchorPane.setTopAnchor(mapView, 0.0);
+        AnchorPane.setRightAnchor(mapView, 0.0);
+        AnchorPane.setBottomAnchor(mapView, 0.0);
+        AnchorPane.setLeftAnchor(mapView, 0.0);
+
         // Inicializa el MapView
         mapView.initialize();
 
@@ -86,8 +89,58 @@ public class DashboardAdminViewController {
                 columnaEstado.setCellValueFactory(new PropertyValueFactory<>("estado"));
             }
         });
+        modoAmplio();
+        crearOverlayLeyenda();
     }
 
+    private void crearOverlayLeyenda() {
+        // Caja con items
+        legendBox = new VBox(6);
+        legendBox.setFillWidth(false);
+        legendBox.setBackground(new Background(
+                new BackgroundFill(Color.rgb(20,20,30,0.80),
+                        new CornerRadii(10),
+                        Insets.EMPTY)
+        ));
+        legendBox.setPadding(new Insets(8,10,8,10));
+        legendBox.setStyle("-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.45), 14, 0.3, 0, 2);");
+
+        // Scroll SOLO para la leyenda
+        legendScroll = new ScrollPane(legendBox);
+        legendScroll.setFitToWidth(true);
+        legendScroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        legendScroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        legendScroll.setPannable(false);
+
+        // 🔎 Quitar todos los fondos/blancos:
+        legendScroll.setBackground(Background.EMPTY);
+        legendScroll.setBorder(Border.EMPTY);
+        legendScroll.setStyle("-fx-background-color: transparent; -fx-background-insets: 0; -fx-padding: 0;");
+        // El contenido también transparente (por si algún skin añade color)
+        legendBox.setStyle(legendBox.getStyle() + "; -fx-background-color: rgba(20,20,30,0.80);");
+
+        // Colocar en esquina inferior izquierda del mapa (sin cubrirlo con overlays)
+        paneMapa.getChildren().add(legendScroll);
+        legendScroll.setPrefWidth(230);
+        legendScroll.setMaxWidth(230);
+        AnchorPane.setLeftAnchor(legendScroll, 12.0);
+        AnchorPane.setBottomAnchor(legendScroll, 12.0);
+        legendScroll.maxHeightProperty().bind(paneMapa.heightProperty().multiply(0.35));
+
+        // Truco para el viewport blanco (se necesita tras el primer layout):
+        Platform.runLater(() -> {
+            Region viewport = (Region) legendScroll.lookup(".viewport");
+            if (viewport != null) {
+                viewport.setBackground(Background.EMPTY);
+                viewport.setStyle("-fx-background-color: transparent;");
+            }
+        });
+        legendScroll.addEventFilter(javafx.scene.input.MouseEvent.DRAG_DETECTED, e -> {
+            // cede el gesto al mapa inmediatamente
+            legendScroll.startFullDrag(); // evita que el scrollpane intente panear
+            e.consume(); // si prefieres que no haga nada la leyenda al arrastrar
+        });
+    }
     /**
      * Ajuste dinamico del tamaño del mapa y de los botones de navegacion entre municipios
      * @param modo
@@ -137,9 +190,11 @@ public class DashboardAdminViewController {
     }
     public void modoCompacto(){
         aplicarModoMapa(ModoMapa.COMPACTO);
+        bringOverlayToFront();
     }
     public void modoAmplio(){
         aplicarModoMapa(ModoMapa.AMPLIO);
+        bringOverlayToFront();
     }
     /**
      *
@@ -207,8 +262,8 @@ public class DashboardAdminViewController {
         PaneAdmin.setVisible(false);
         paneMapa.setPrefWidth(1257);
         paneMapa.setPrefHeight(536);
-        mostrarInicioDeMunicipios();
         prepararCacheMunicipios();
+        mostrarInicioDeMunicipios();
     }
 
     /**
@@ -373,6 +428,8 @@ public class DashboardAdminViewController {
         double lonCentro = coordsRuta.stream().mapToDouble(Coordinate::getLongitude).average().orElse(0);
         mapView.setCenter(new Coordinate(latCentro, lonCentro));
         mapView.setZoom(14);
+        List<Zona> paradas = ruta.getParadas();
+        refrescarLeyenda(paradas);
     }
     /**
      * ---------------------------------------VENTANA DE ESTADISTICAS--------------------------------------
@@ -479,7 +536,6 @@ public class DashboardAdminViewController {
      * @param municipio
      */
     private void mostrarMarcadoresMunicipio(Municipio municipio) {
-        // Limpiar marcadores previos
         for (Marker m : marcadoresMunicipio) {
             mapView.removeMarker(m);
         }
@@ -502,6 +558,7 @@ public class DashboardAdminViewController {
             mapView.addMarker(marcador);
             marcadoresMunicipio.add(marcador);
         }
+        refrescarLeyenda(zonasMunicipio);
     }
 
     /**
@@ -622,6 +679,115 @@ public class DashboardAdminViewController {
         graficoRecursosDistribuidos.setLabelsVisible(true);
         graficoRecursosDistribuidos.setLegendVisible(true);
     }
+    private Paint colorTipo(TipoZona t) {
+        return switch (t) {
+            case CIUDAD       -> Color.web("#2ecc71"); // verde
+            case REFUGIO      -> Color.web("#e74c3c"); // rojo
+            case CENTRO_AYUDA -> Color.web("#3498db"); // azul
+            default           -> Color.web("#bdc3c7"); // gris fallback
+        };
+    }
+
+    private String etiquetaZona(Zona z) {
+        String tipo = switch (z.getTipo()) {
+            case CIUDAD -> "Ciudad";
+            case REFUGIO -> "Refugio";
+            case CENTRO_AYUDA -> "Centro de ayuda";
+            default -> z.getTipo().name();
+        };
+        return tipo + " · " + z.getNombre();
+    }
+
+    private void refrescarLeyenda(List<Zona> zonas) {
+        if (legendBox == null) return;
+        legendBox.getChildren().clear();
+
+        // Agrupar por tipo
+        Map<TipoZona, List<Zona>> porTipo = zonas.stream()
+                .collect(Collectors.groupingBy(Zona::getTipo));
+
+        // Orden de tipos fijo (Ciudad, Refugio, Centro de ayuda)
+        List<TipoZona> ordenTipos = List.of(TipoZona.CIUDAD, TipoZona.REFUGIO, TipoZona.CENTRO_AYUDA);
+
+        for (TipoZona tipo : ordenTipos) {
+            List<Zona> lista = porTipo.get(tipo);
+            if (lista == null || lista.isEmpty()) continue;
+
+            // Orden alfabético por nombre de zona
+            lista = lista.stream()
+                    .sorted(Comparator.comparing(Zona::getNombre, String.CASE_INSENSITIVE_ORDER))
+                    .toList();
+
+            // Cabecera (colapsable)
+            HBox header = new HBox(8);
+            header.setAlignment(Pos.CENTER_LEFT);
+
+            Circle bullet = new Circle(6, colorTipo(tipo));
+            Label lbl = new Label(switch (tipo) {
+                case CIUDAD       -> "Ciudad";
+                case REFUGIO      -> "Refugio";
+                case CENTRO_AYUDA -> "Centro de ayuda";
+                default           -> tipo.name();
+            } + " (" + lista.size() + ")");
+            lbl.setTextFill(Color.WHITE);
+            lbl.setStyle("-fx-font-size: 13px; -fx-font-weight: 700;");
+
+            Label caret = new Label("▸"); // ▶/▼
+            caret.setTextFill(Color.WHITE);
+            caret.setStyle("-fx-font-size: 12px; -fx-opacity: 0.85;");
+
+            Region spacer = new Region();
+            HBox.setHgrow(spacer, Priority.ALWAYS);
+
+            header.getChildren().addAll(bullet, lbl, spacer, caret);
+
+            // Contenedor colapsable con los nombres (máx 4 y ‘+N más’)
+            VBox detalles = new VBox(4);
+            detalles.setVisible(false);
+            detalles.setManaged(false);
+
+            int maxMostrar = 4;
+            for (int i = 0; i < Math.min(maxMostrar, lista.size()); i++) {
+                Zona z = lista.get(i);
+                Label item = new Label("• " + z.getNombre() + " · " + z.getMunicipio().getNombre());
+                item.setTextFill(Color.WHITE);
+                item.setStyle("-fx-font-size: 12px; -fx-opacity: 0.95;");
+                detalles.getChildren().add(item);
+                item.setOnMouseClicked(ev -> {
+                    Coordinate c = new Coordinate(z.getLatitud(), z.getAltitud());
+                    centrarEn(c, 15);
+                });
+            }
+            if (lista.size() > maxMostrar) {
+                int restantes = lista.size() - maxMostrar;
+                Label mas = new Label("… +" + restantes + " más");
+                mas.setTextFill(Color.WHITE);
+                mas.setStyle("-fx-font-size: 12px; -fx-opacity: 0.75;");
+                detalles.getChildren().add(mas);
+            }
+
+            // Toggle colapso
+            header.setOnMouseClicked(e -> {
+                boolean show = !detalles.isVisible();
+                detalles.setVisible(show);
+                detalles.setManaged(show);
+                caret.setText(show ? "▾" : "▸");
+            });
+
+            // Meter al panel
+            legendBox.getChildren().addAll(header, detalles);
+        }
+
+        legendBox.setVisible(!legendBox.getChildren().isEmpty());
+        legendBox.toFront();
+    }
+
+    private void bringOverlayToFront() {
+        if (overlay != null) overlay.toFront();
+        if (btnDer != null) btnDer.toFront();
+        if (btnIzq != null) btnIzq.toFront();
+    }
+
 
     @FXML
     void btnActualizarRutas(ActionEvent event) {
@@ -676,6 +842,18 @@ public class DashboardAdminViewController {
 
     public void setSistemaGestionDesastres(SistemaGestionDesastres sistemaGestionDesastres) {
         this.sistemaGestionDesastres = sistemaGestionDesastres;
+        prepararCacheMunicipios();
+        // Si el mapa ya está inicializado, muestra de una
+        if (mapView != null && mapView.initializedProperty().get()) {
+            mostrarInicioDeMunicipios();
+        } else {
+            // Si no, espera a que esté listo una única vez
+            mapView.initializedProperty().addListener((obs, was, ready) -> {
+                if (ready) {
+                    mostrarInicioDeMunicipios();
+                }
+            });
+        }
     }
 
 }

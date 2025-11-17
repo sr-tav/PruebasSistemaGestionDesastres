@@ -9,7 +9,8 @@
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.paint.Color?>
 <?import javafx.scene.paint.RadialGradient?>
 <?import javafx.scene.paint.Stop?>
@@ -379,7 +380,7 @@
             </Button>
          </children>
       </AnchorPane>
-      <Pane fx:id="paneMapa" layoutX="-2.0" layoutY="115.0" prefHeight="536.0" prefWidth="1254.0" AnchorPane.bottomAnchor="69.0" AnchorPane.leftAnchor="-2.0" AnchorPane.rightAnchor="-2.0" AnchorPane.topAnchor="115.0">
+      <AnchorPane fx:id="paneMapa" layoutX="-2.0" layoutY="115.0" AnchorPane.bottomAnchor="69.0" AnchorPane.leftAnchor="-2.0" AnchorPane.rightAnchor="-2.0" AnchorPane.topAnchor="115.0">
          <children>
             <Button fx:id="btnIzq" layoutX="16.0" layoutY="225.0" mnemonicParsing="false" onAction="#clickIzq" prefHeight="45.0" prefWidth="53.0" styleClass="btn_SelectorMunicipio" stylesheets="@../css/DashboardStyle.css">
                <graphic>
@@ -399,6 +400,9 @@
                   </ImageView>
                </graphic>
             </Button>
-         </children></Pane>
+            <VBox fx:id="legendBox" prefHeight="200.0" prefWidth="100.0" />
+            <StackPane fx:id="overlay" prefHeight="150.0" prefWidth="200.0" />
+         </children>
+      </AnchorPane>
    </children>
 </AnchorPane>
