@@ -55,4 +55,9 @@ public class Zona extends EntidadBase{
     public void setPersonasEvacuadas(int personasEvacuadas) {
         this.personasEvacuadas = personasEvacuadas;
     }
+
+    public void setPersonasTotales(int personasTotales) {
+        this.personasTotales = personasTotales;
+    }
+
 }

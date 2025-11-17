@@ -494,7 +494,30 @@ public class DashboardAdminViewController {
     }
     @FXML
     void btnActualizarAvanceEvacuaciones(ActionEvent event) {
-
+        if (sistemaGestionDesastres == null) {
+            System.out.println("sistemaGestionDesastres es null");
+            return;
+        }
+        Map<String, Double> avances = sistemaGestionDesastres.getAvanceEvacuaciones();
+        System.out.println("Avances obtenidos: " + avances);
+        System.out.println("Tamaño del Map: " + avances.size());
+        if (avances.isEmpty()) {
+            System.out.println("Avances está vacío, limpiando gráfico");
+            graficoAvanceRecursos.setData(FXCollections.emptyObservableList());
+            return;
+        }
+        ObservableList<PieChart.Data> datos = FXCollections.observableArrayList();
+        for (Map.Entry<String, Double> entry : avances.entrySet()) {
+            String zona = entry.getKey();
+            double porcentaje = entry.getValue() * 100.0;
+            System.out.println("Agregando: " + zona + " - " + porcentaje + "%");
+            datos.add(new PieChart.Data(zona + " (" + String.format("%.1f%%", porcentaje) + ")", porcentaje));
+        }
+        System.out.println("Datos para gráfico: " + datos.size() + " sectores");
+        graficoAvanceRecursos.setTitle("Avance de Evacuaciones por Zona");
+        graficoAvanceRecursos.setData(datos);
+        graficoAvanceRecursos.setLabelsVisible(true);
+        graficoAvanceRecursos.setLegendVisible(true);
     }
 
     @FXML

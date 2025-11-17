@@ -630,6 +630,29 @@ public class SistemaGestionDesastres {
 
 
 
+        for (Zona zona : s.getZonas()) {
+            int poblacionBase = zona.getMunicipio().getPoblacion();
+            switch (zona.getTipo()) {
+                case CIUDAD -> zona.setPersonasTotales(poblacionBase / 2);
+                case REFUGIO -> zona.setPersonasTotales(Math.min(2000, poblacionBase / 10));
+                case CENTRO_AYUDA -> zona.setPersonasTotales(0);
+                default -> zona.setPersonasTotales(0);
+            }
+        }
+
+        zCiudad.setPersonasEvacuadas(25000);
+        zRefugio.setPersonasEvacuadas(600);
+        zRefugioCal.setPersonasEvacuadas(300);
+
+        zCentroArmenia.setPersonasEvacuadas(50000);
+        zRefugioArmenia.setPersonasEvacuadas(1000);
+        zCentroQuimbaya.setPersonasEvacuadas(20000);
+
+
+
+
+
+
 
 
 
@@ -721,10 +744,13 @@ public class SistemaGestionDesastres {
             int evacuadas = zona.getPersonasEvacuadas();
             int totales = zona.getPersonasTotales();
             double porcentaje = (totales > 0) ? (double) evacuadas / totales : 0.0;
-            avances.put(zona.getNombre(), Math.min(porcentaje, 1.0));
+            if (porcentaje > 0.0) {
+                avances.put(zona.getNombre(), Math.min(porcentaje, 1.0));
+            }
         }
         return avances;
     }
+
 
 
 
