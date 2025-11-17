@@ -42,6 +42,8 @@ public class DashboardAdminViewController {
     private MapCircle zonaModerada;
     private MapCircle zonaEstable;
     private MapLabel lblCalarca;
+    private enum ModoMapa { COMPACTO, AMPLIO }
+    private ModoMapa modoActual = ModoMapa.AMPLIO;
 
     /**
      *
@@ -51,7 +53,6 @@ public class DashboardAdminViewController {
         mapView = new MapView();
         mapView.setMapType(MapType.OSM);
         mapView.setMaxSize(1920, 1080);     // o 2560x1440 si necesitas más
-        paneMapa.setMaxSize(1920, 1080);
         mapView.setMinSize(2, 2);
         paneMapa.setMinSize(2, 2);
 
@@ -59,7 +60,7 @@ public class DashboardAdminViewController {
         mapView.setPrefSize(Region.USE_COMPUTED_SIZE, Region.USE_COMPUTED_SIZE);
         mapView.prefWidthProperty().bind(paneMapa.widthProperty());
         mapView.prefHeightProperty().bind(paneMapa.heightProperty());
-
+        modoAmplio();
         // Inicializa el MapView
         mapView.initialize();
 
@@ -85,6 +86,60 @@ public class DashboardAdminViewController {
                 columnaEstado.setCellValueFactory(new PropertyValueFactory<>("estado"));
             }
         });
+    }
+
+    /**
+     * Ajuste dinamico del tamaño del mapa y de los botones de navegacion entre municipios
+     * @param modo
+     */
+    private void aplicarModoMapa(ModoMapa modo) {
+        if (paneMapa.prefWidthProperty().isBound())  paneMapa.prefWidthProperty().unbind();
+        if (paneMapa.prefHeightProperty().isBound()) paneMapa.prefHeightProperty().unbind();
+
+        AnchorPane.clearConstraints(paneMapa);
+
+        paneMapa.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+        paneMapa.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+
+        switch (modo) {
+            case COMPACTO -> {
+                paneMapa.setPrefSize(828, 536);
+                AnchorPane.setTopAnchor(paneMapa, 115.0);
+                AnchorPane.setLeftAnchor(paneMapa, 18.0);
+                AnchorPane.setRightAnchor(paneMapa, null);
+                AnchorPane.setBottomAnchor(paneMapa, null);
+
+                btnDer.setLayoutX(736); btnDer.setLayoutY(222);
+                btnIzq.setLayoutX(24);  btnIzq.setLayoutY(222);
+            }
+            case AMPLIO -> {
+                paneMapa.setPrefSize(1255, 536);
+                AnchorPane.setTopAnchor(paneMapa, 115.0);
+                AnchorPane.setLeftAnchor(paneMapa, -2.0);
+                AnchorPane.setRightAnchor(paneMapa, null);
+                AnchorPane.setBottomAnchor(paneMapa, null);
+
+                btnDer.setLayoutX(1173); btnDer.setLayoutY(222);
+                btnIzq.setLayoutX(24);   btnIzq.setLayoutY(222);
+            }
+        }
+
+        if (!mapView.prefWidthProperty().isBound())  mapView.prefWidthProperty().bind(paneMapa.widthProperty());
+        if (!mapView.prefHeightProperty().isBound()) mapView.prefHeightProperty().bind(paneMapa.heightProperty());
+
+        paneMapa.toFront();
+        btnDer.toFront();
+        btnIzq.toFront();
+        paneMapa.applyCss();
+        paneMapa.requestLayout();
+
+        modoActual = modo;
+    }
+    public void modoCompacto(){
+        aplicarModoMapa(ModoMapa.COMPACTO);
+    }
+    public void modoAmplio(){
+        aplicarModoMapa(ModoMapa.AMPLIO);
     }
     /**
      *
@@ -145,9 +200,7 @@ public class DashboardAdminViewController {
      */
     @FXML
     void clickInicio(ActionEvent event) {
-        paneMapa.toFront();
-        btnDer.toFront();
-        btnIzq.toFront();
+        modoAmplio();
         PaneInicio.setVisible(true);
         PaneRutas.setVisible(false);
         PaneEstads.setVisible(false);
@@ -264,13 +317,11 @@ public class DashboardAdminViewController {
      */
     @FXML
     void clickAdmin(ActionEvent event) {
-        paneMapa.toFront();
+        modoCompacto();
         PaneInicio.setVisible(false);
         PaneRutas.setVisible(false);
         PaneEstads.setVisible(false);
         PaneAdmin.setVisible(true);
-        paneMapa.setPrefWidth(750);
-        paneMapa.setPrefHeight(536);
     }
     /**
      * ---------------------------------------VENTANA DE RUTAS--------------------------------------
@@ -286,13 +337,11 @@ public class DashboardAdminViewController {
      */
     @FXML
     void clickRutas(ActionEvent event) {
-        paneMapa.toFront();
+        modoCompacto();
         PaneInicio.setVisible(false);
         PaneRutas.setVisible(true);
         PaneEstads.setVisible(false);
         PaneAdmin.setVisible(false);
-        paneMapa.setPrefWidth(750);
-        paneMapa.setPrefHeight(536);
     }
     /**
      *
@@ -335,6 +384,7 @@ public class DashboardAdminViewController {
      */
     @FXML
     void clickEstadisticas(ActionEvent event) {
+        modoCompacto();
         PaneInicio.setVisible(false);
         PaneRutas.setVisible(false);
         PaneEstads.setVisible(true);

@@ -15,7 +15,7 @@
 <?import javafx.scene.paint.Stop?>
 <?import javafx.scene.text.Text?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="720.0" prefWidth="1250.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.pruebassistemadesastres.viewController.DashboardAdminViewController">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="720.0" prefWidth="1250.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.pruebassistemadesastres.viewController.DashboardAdminViewController">
    <children>
       <AnchorPane prefHeight="42.0" prefWidth="1250.0" style="-fx-background-color: #141587;">
          <children>
@@ -95,7 +95,7 @@
             </Button>
          </children>
       </AnchorPane>
-      <AnchorPane fx:id="PaneAdmin" layoutY="42.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="678.0" prefWidth="1250.0" style="-fx-background-color: #02032d; -fx-border-color: black;" visible="false">
+      <AnchorPane fx:id="PaneAdmin" layoutY="42.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="678.0" prefWidth="1250.0" style="-fx-background-color: #02032d; -fx-border-color: black;">
          <children>
             <AnchorPane layoutX="872.0" layoutY="358.0" prefHeight="270.0" prefWidth="326.0" style="-fx-background-color: #141587; -fx-border-radius: 30; -fx-background-radius: 30;">
                <children>
@@ -225,8 +225,8 @@
                   </RadialGradient>
                </textFill>
             </Button>
-            <TextField alignment="TOP_CENTER" layoutX="864.0" layoutY="53.0" prefHeight="27.0" prefWidth="296.0" style="-fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-radius: 30;" text="PLANIFICADOR DE RUTAS" />
-            <Button fx:id="actualizarRutas" layoutX="842.0" layoutY="314.0" mnemonicParsing="false" onAction="#btnActualizarRutas" prefHeight="32.0" prefWidth="128.0" style="-fx-border-radius: 30; -fx-border-color: black; -fx-background-color: #141587; -fx-background-radius: 30; -fx-border-width: 2;" text="ACTUALIZAR RUTAS">
+            <TextField alignment="TOP_CENTER" layoutX="909.0" layoutY="53.0" prefHeight="27.0" prefWidth="296.0" style="-fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-radius: 30;" text="PLANIFICADOR DE RUTAS" />
+            <Button fx:id="actualizarRutas" layoutX="909.0" layoutY="322.0" mnemonicParsing="false" onAction="#btnActualizarRutas" prefHeight="32.0" prefWidth="128.0" style="-fx-border-radius: 30; -fx-border-color: black; -fx-background-color: #141587; -fx-background-radius: 30; -fx-border-width: 2;" text="ACTUALIZAR RUTAS">
                <textFill>
                   <RadialGradient centerX="0.5" centerY="0.5" radius="0.5">
                      <stops>
@@ -244,7 +244,7 @@
                   </RadialGradient>
                </textFill>
             </Button>
-            <Button fx:id="agregarRuta" layoutX="1029.0" layoutY="314.0" mnemonicParsing="false" onAction="#btnAgregarRuta" prefHeight="32.0" prefWidth="128.0" style="-fx-border-radius: 30; -fx-border-color: black; -fx-background-color: #141587; -fx-background-radius: 30; -fx-border-width: 2;" text="AGREGAR RUTA">
+            <Button fx:id="agregarRuta" layoutX="1096.0" layoutY="322.0" mnemonicParsing="false" onAction="#btnAgregarRuta" prefHeight="32.0" prefWidth="128.0" style="-fx-border-radius: 30; -fx-border-color: black; -fx-background-color: #141587; -fx-background-radius: 30; -fx-border-width: 2;" text="AGREGAR RUTA">
                <textFill>
                   <RadialGradient centerX="0.5" centerY="0.5" radius="0.5">
                      <stops>
@@ -262,11 +262,11 @@
                   </RadialGradient>
                </textFill>
             </Button>
-            <ComboBox fx:id="comboMunicipio" layoutX="842.0" layoutY="375.0" prefHeight="16.0" prefWidth="128.0" promptText="Municipio" />
-            <ComboBox fx:id="comboZonaInicio" layoutX="842.0" layoutY="432.0" prefHeight="16.0" prefWidth="128.0" promptText="Inicio" />
-            <ComboBox fx:id="comboZonaFinal" layoutX="842.0" layoutY="489.0" prefHeight="16.0" prefWidth="128.0" promptText="Final" />
-            <Button fx:id="btnMostrarRuta" layoutX="1052.0" layoutY="432.0" mnemonicParsing="false" onAction="#btnMostrarRutaAction" text="Mostrar ruta" />
-            <AnchorPane layoutX="831.0" layoutY="111.0" prefHeight="179.0" prefWidth="346.0" style="-fx-background-color: #141587; -fx-border-radius: 30; -fx-background-radius: 30;">
+            <ComboBox fx:id="comboMunicipio" layoutX="909.0" layoutY="383.0" prefHeight="16.0" prefWidth="128.0" promptText="Municipio" />
+            <ComboBox fx:id="comboZonaInicio" layoutX="909.0" layoutY="440.0" prefHeight="16.0" prefWidth="128.0" promptText="Inicio" />
+            <ComboBox fx:id="comboZonaFinal" layoutX="909.0" layoutY="497.0" prefHeight="16.0" prefWidth="128.0" promptText="Final" />
+            <Button fx:id="btnMostrarRuta" layoutX="1119.0" layoutY="440.0" mnemonicParsing="false" onAction="#btnMostrarRutaAction" text="Mostrar ruta" />
+            <AnchorPane layoutX="887.0" layoutY="112.0" prefHeight="179.0" prefWidth="346.0" style="-fx-background-color: #141587; -fx-border-radius: 30; -fx-background-radius: 30;">
                <children>
                   <TextField layoutX="20.0" layoutY="39.0" prefHeight="27.0" prefWidth="128.0" style="-fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-radius: 30;" />
                   <TextField layoutX="21.0" layoutY="79.0" prefHeight="27.0" prefWidth="128.0" style="-fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-radius: 30;" />
@@ -379,9 +379,9 @@
             </Button>
          </children>
       </AnchorPane>
-      <Pane fx:id="paneMapa" layoutX="-4.0" layoutY="115.0" prefHeight="536.0" prefWidth="1257.0">
+      <Pane fx:id="paneMapa" layoutX="-2.0" layoutY="115.0" prefHeight="536.0" prefWidth="1254.0" AnchorPane.bottomAnchor="69.0" AnchorPane.leftAnchor="-2.0" AnchorPane.rightAnchor="-2.0" AnchorPane.topAnchor="115.0">
          <children>
-            <Button fx:id="btnIzq" layoutX="32.0" layoutY="171.0" mnemonicParsing="false" onAction="#clickIzq" prefHeight="45.0" prefWidth="53.0" styleClass="btn_SelectorMunicipio" stylesheets="@../css/DashboardStyle.css">
+            <Button fx:id="btnIzq" layoutX="16.0" layoutY="225.0" mnemonicParsing="false" onAction="#clickIzq" prefHeight="45.0" prefWidth="53.0" styleClass="btn_SelectorMunicipio" stylesheets="@../css/DashboardStyle.css">
                <graphic>
                   <ImageView fitHeight="53.0" fitWidth="59.0" pickOnBounds="true" preserveRatio="true">
                      <image>
@@ -390,7 +390,7 @@
                   </ImageView>
                </graphic>
             </Button>
-            <Button fx:id="btnDer" layoutX="1165.0" layoutY="180.0" mnemonicParsing="false" onAction="#clickDer" prefHeight="61.0" prefWidth="62.0" styleClass="btn_SelectorMunicipio" stylesheets="@../css/DashboardStyle.css">
+            <Button fx:id="btnDer" layoutX="1173.0" layoutY="225.0" mnemonicParsing="false" onAction="#clickDer" prefHeight="61.0" prefWidth="62.0" styleClass="btn_SelectorMunicipio" stylesheets="@../css/DashboardStyle.css">
                <graphic>
                   <ImageView fitHeight="53.0" fitWidth="59.0" pickOnBounds="true" preserveRatio="true">
                      <image>
