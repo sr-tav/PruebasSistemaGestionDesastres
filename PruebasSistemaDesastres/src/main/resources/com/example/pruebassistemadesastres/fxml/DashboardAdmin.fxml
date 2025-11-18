@@ -3,6 +3,7 @@
 <?import javafx.scene.chart.PieChart?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
@@ -97,37 +98,16 @@
             </Button>
          </children>
       </AnchorPane>
-      <AnchorPane fx:id="PaneAdmin" layoutY="42.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="678.0" prefWidth="1250.0" style="-fx-background-color: #02032d; -fx-border-color: black;">
+      <AnchorPane fx:id="PaneAdmin" layoutY="42.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="678.0" prefWidth="1250.0" style="-fx-background-color: #02032d; -fx-border-color: black;" visible="false">
          <children>
-            <AnchorPane layoutX="872.0" layoutY="358.0" prefHeight="270.0" prefWidth="326.0" style="-fx-background-color: #141587; -fx-border-radius: 30; -fx-background-radius: 30;">
-               <children>
-                  <TableView fx:id="tablaGestionInventario" layoutX="48.0" layoutY="7.0" prefHeight="256.0" prefWidth="230.0" style="-fx-background-color: #141587; -fx-border-color: white;">
-                     <columns>
-                        <TableColumn fx:id="columnaRecurso" prefWidth="75.0" style="-fx-background-color: #141587; -fx-border-color: white;" text="RECURSO" />
-                        <TableColumn fx:id="columnaCantidad" prefWidth="75.0" style="-fx-background-color: #141587; -fx-border-color: white;" text="CANTIDAD" />
-                        <TableColumn fx:id="columnaEstado" prefWidth="75.0" style="-fx-border-color: white; -fx-background-color: #141587;" styleClass=".fx.border.color" text="ESTADO" />
-                     </columns>
-                  </TableView>
-               </children>
-            </AnchorPane>
-            <TextField layoutX="861.0" layoutY="310.0" style="-fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-radius: 30;" />
-            <Text fill="WHITE" layoutX="877.0" layoutY="328.0" strokeType="OUTSIDE" strokeWidth="0.0" text="GESTION INVENTARIO" />
-            <TextField layoutX="884.0" layoutY="55.0" style="-fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-radius: 30;" />
-            <Text fill="WHITE" layoutX="892.0" layoutY="73.0" strokeType="OUTSIDE" strokeWidth="0.0" text="ASIGNACION DE EQUIPO" />
-            <AnchorPane layoutX="862.0" layoutY="107.0" prefHeight="179.0" prefWidth="346.0" style="-fx-background-color: #141587; -fx-border-radius: 30; -fx-background-radius: 30;">
-               <children>
-                  <TextField layoutX="20.0" layoutY="39.0" prefHeight="27.0" prefWidth="128.0" style="-fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-radius: 30;" />
-                  <TextField layoutX="21.0" layoutY="79.0" prefHeight="27.0" prefWidth="128.0" style="-fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-radius: 30;" />
-                  <TextField layoutX="21.0" layoutY="122.0" prefHeight="27.0" prefWidth="128.0" style="-fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-radius: 30;" />
-                  <Text fill="WHITE" layoutX="58.0" layoutY="57.0" strokeType="OUTSIDE" strokeWidth="0.0" text="EQUIPO 1" />
-                  <Text fill="WHITE" layoutX="58.0" layoutY="97.0" strokeType="OUTSIDE" strokeWidth="0.0" text="EQUIPO 2" />
-                  <Text fill="WHITE" layoutX="62.0" layoutY="140.0" strokeType="OUTSIDE" strokeWidth="0.0" text="EQUIPO 3" />
-                  <TextField layoutX="197.0" layoutY="39.0" prefHeight="27.0" prefWidth="112.0" style="-fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-radius: 30;" />
-                  <TextField layoutX="197.0" layoutY="79.0" prefHeight="27.0" prefWidth="112.0" style="-fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-radius: 30;" />
-                  <TextField layoutX="197.0" layoutY="122.0" prefHeight="27.0" prefWidth="112.0" style="-fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-radius: 30;" />
-               </children>
-            </AnchorPane>
-            <Button fx:id="asginarEquiposAdmin" layoutX="1084.0" layoutY="54.0" mnemonicParsing="false" onAction="#btnAsignarEquiposAdmin" prefHeight="30.0" prefWidth="104.0" style="-fx-border-radius: 30; -fx-border-color: black; -fx-background-color: #141587; -fx-background-radius: 30; -fx-border-width: 2;" text="ASIGNAR">
+            <TableView fx:id="tablaGestionInventario" layoutX="891.0" layoutY="104.0" prefHeight="422.0" prefWidth="330.0" style="-fx-background-color: #141587; -fx-border-color: white;">
+               <columns>
+                  <TableColumn fx:id="columnaRecurso" prefWidth="75.0" style="-fx-background-color: #141587; -fx-border-color: white;" text="RECURSO" />
+                  <TableColumn fx:id="columnaCantidad" prefWidth="75.0" style="-fx-background-color: #141587; -fx-border-color: white;" text="CANTIDAD" />
+                  <TableColumn fx:id="columnaEstado" prefWidth="75.0" style="-fx-border-color: white; -fx-background-color: #141587;" styleClass=".fx.border.color" text="ESTADO" />
+               </columns>
+            </TableView>
+            <Button fx:id="asginarEquiposAdmin" layoutX="1073.0" layoutY="48.0" mnemonicParsing="false" onAction="#btnAsignarEquiposAdmin" prefHeight="40.0" prefWidth="40.0" styleClass="btn_subir_recurso_equipo" stylesheets="@../css/DashboardStyle.css">
                <textFill>
                   <RadialGradient centerX="0.5" centerY="0.5" radius="0.5">
                      <stops>
@@ -144,8 +124,15 @@
                      </stops>
                   </RadialGradient>
                </textFill>
+               <graphic>
+                  <ImageView fitHeight="31.0" fitWidth="29.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../imagenes/chevron-doble.png" />
+                     </image>
+                  </ImageView>
+               </graphic>
             </Button>
-            <Button fx:id="actualizarInventarioaAdmin" layoutX="1043.0" layoutY="308.0" mnemonicParsing="false" onAction="#btnActualizarInventarioAdmin" prefHeight="32.0" prefWidth="165.0" style="-fx-border-radius: 30; -fx-border-color: black; -fx-background-color: #141587; -fx-background-radius: 30; -fx-border-width: 2;" text="ACTUALIZAR INVENTARIO">
+            <Button fx:id="actualizarInventarioaAdmin" layoutX="1180.0" layoutY="48.0" mnemonicParsing="false" onAction="#btnActualizarInventarioAdmin" prefHeight="40.0" prefWidth="40.0" styleClass="btn_actualizar_tabla_recursos" stylesheets="@../css/DashboardStyle.css">
                <textFill>
                   <RadialGradient centerX="0.5" centerY="0.5" radius="0.5">
                      <stops>
@@ -162,6 +149,13 @@
                      </stops>
                   </RadialGradient>
                </textFill>
+               <graphic>
+                  <ImageView fitHeight="150.0" fitWidth="21.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../imagenes/actualizar-flecha.png" />
+                     </image>
+                  </ImageView>
+               </graphic>
             </Button>
             <Button fx:id="cerrarSesionAdmin" layoutX="34.0" layoutY="628.0" mnemonicParsing="false" onAction="#btnCerrarSesionAdmin" prefHeight="32.0" prefWidth="128.0" style="-fx-border-radius: 30; -fx-border-color: black; -fx-background-color: #141587; -fx-background-radius: 30; -fx-border-width: 2;" text="CERRRAR SESION">
                <textFill>
@@ -181,24 +175,32 @@
                   </RadialGradient>
                </textFill>
             </Button>
-            <Button layoutX="335.0" layoutY="22.0" mnemonicParsing="false" prefHeight="32.0" prefWidth="166.0" style="-fx-border-radius: 30; -fx-border-color: black; -fx-background-color: #141587; -fx-background-radius: 30; -fx-border-width: 2;" text="UBICACION EQUIPOS">
-               <textFill>
-                  <RadialGradient centerX="0.5" centerY="0.5" radius="0.5">
-                     <stops>
-                        <Stop>
-                           <color>
-                              <Color red="1.0" green="1.0" blue="1.0" />
-                           </color>
-                        </Stop>
-                        <Stop offset="1.0">
-                           <color>
-                              <Color red="1.0" green="1.0" blue="1.0" />
-                           </color>
-                        </Stop>
-                     </stops>
-                  </RadialGradient>
-               </textFill>
+            <Button fx:id="btnAgregarRecurso" layoutX="1130.0" layoutY="48.0" mnemonicParsing="false" onAction="#clickAgregarRecurso" prefHeight="40.0" prefWidth="40.0" styleClass="btn_agregar_tabla_recursos" stylesheets="@../css/DashboardStyle.css">
+               <graphic>
+                  <ImageView fitHeight="24.0" fitWidth="29.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../imagenes/boton-circular-plus.png" />
+                     </image>
+                  </ImageView>
+               </graphic>
             </Button>
+            <ComboBox fx:id="comboSeleccionarEquipo" layoutX="890.0" layoutY="55.0" prefHeight="25.0" prefWidth="166.0" />
+            <Button fx:id="btnEnviarEquipo" layoutX="1112.0" layoutY="568.0" mnemonicParsing="false" onAction="#clickEnviarEquipo" prefHeight="30.0" prefWidth="100.0" styleClass="btn_minimizar" stylesheets="@../css/DashboardStyle.css" text="Enviar Equipo" textFill="WHITE">
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font>
+            </Button>
+            <ComboBox fx:id="comboSalidaRecursos" layoutX="904.0" layoutY="571.0" prefHeight="25.0" prefWidth="190.0" />
+            <Label layoutX="904.0" layoutY="544.0" opacity="0.66" text="Seleccionar salida de los recursos" textFill="WHITE">
+               <font>
+                  <Font name="System Italic" size="12.0" />
+               </font>
+            </Label>
+            <Label layoutX="891.0" layoutY="31.0" opacity="0.66" text="Seleccionar equipo" textFill="WHITE">
+               <font>
+                  <Font name="System Italic" size="12.0" />
+               </font>
+            </Label>
          </children>
       </AnchorPane>
       <AnchorPane fx:id="PaneInicio" layoutX="-5.0" layoutY="39.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="684.0" prefWidth="1257.0" style="-fx-background-color: #02032d; -fx-border-color: black;" stylesheets="@../css/DashboardStyle.css">

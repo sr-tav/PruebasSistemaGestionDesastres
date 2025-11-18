@@ -2,6 +2,9 @@ package com.example.pruebassistemadesastres.viewController;
 
 import com.example.pruebassistemadesastres.model.*;
 import com.sothawo.mapjfx.*;
+import javafx.animation.Animation;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -76,6 +79,7 @@ public class DashboardAdminViewController {
         });
         modoAmplio();
         crearOverlayLeyenda();
+        crearHudMulti();
     }
 
     private void crearOverlayLeyenda() {
@@ -233,6 +237,11 @@ public class DashboardAdminViewController {
     private int idxMunicipio = 0;
     private Map<String, Municipio> cacheMunicipiosPorNombre = new LinkedHashMap<>();
     private List<String> ordenMunicipiosCambia= ordenMunicipios;
+    private Marker markerVehiculo;        // el carrito
+    private javafx.animation.Timeline animRuta;  // timeline de animación
+    private VBox hudBox;                  // panel flotante
+    private Label lblHudTitulo, lblHudETA, lblHudDist, lblHudVel;
+    private ProgressBar hudProgress;
 
     /**
      *
@@ -339,7 +348,6 @@ public class DashboardAdminViewController {
         // 2) Crear uno nuevo en el modelo
         desastreActivo = sistemaGestionDesastres.iniciarSimulacro();
         if (desastreActivo == null) return;
-
         // 3) Pintar marker y círculos
         Coordinate c = new Coordinate(desastreActivo.getLatitud(), desastreActivo.getAltitud());
         try {
@@ -356,10 +364,13 @@ public class DashboardAdminViewController {
         mapView.addMapCircle(cCritico);
         mapView.addMapCircle(cModerado);
         mapView.addMapCircle(cEstable);
-
-        // 4) Centrar y refrescar marcadores/leyenda del municipio del desastre
         centrarEn(c, 15);
         mostrarMarcadoresMunicipio(desastreActivo.getMunicipio());
+        refrescarComboSalidaPorDesastre();
+        conectarDesastreConTodasLasZonasMunicipio();
+        detenerTodosLosEnvios();
+        crearHudDesastre();
+        actualizarHudDesastre();
     }
     /**
      *
@@ -408,6 +419,36 @@ public class DashboardAdminViewController {
     @FXML private ComboBox<Zona> comboZonaInicio;
     @FXML private ComboBox<Zona> comboZonaFinal;
     @FXML private Button btnMostrarRuta;
+    @FXML private Button btnAgregarRecurso;
+    @FXML private Button btnEnviarEquipo;
+    @FXML private ComboBox<Equipo> comboSeleccionarEquipo;
+    @FXML private ComboBox<Zona> comboSalidaRecursos;
+    private final ObservableList<RecursoInventarioView> recursosSeleccionados = FXCollections.observableArrayList();
+    private Recurso vehiculoSeleccionado = null;
+    // === MULTI-ENVÍOS ===
+    private static class EnvioAnim {
+        String id;
+        Marker marker;
+        Timeline timeline;
+        ProgressBar progress;
+        Label lblTitulo, lblETA, lblDist, lblVel;
+        VBox hudRow;
+        double horasTotales;
+        long t0;
+        List<Coordinate> coords;
+        boolean enRegreso; // <—
+    }
+    private final Map<String, EnvioAnim> enviosActivos = new LinkedHashMap<>();
+    private VBox hudLista;            // contenedor de varios HUDs
+    private ScrollPane hudScroll;     // scroll del HUD
+    private final List<CoordinateLine> rutasDibujadas = new ArrayList<>();
+    private final Map<String, Marker> vehMarkers = new HashMap<>();
+    private final Map<String, javafx.animation.Timeline> vehAnims = new HashMap<>();
+    private final Map<String, List<Coordinate>> vehCoords = new HashMap<>();
+    private VBox hudDesastre;
+    private Label lblDesastreTitulo, lblPendientes, lblEvacuadas, lblTotales;
+    private final Map<String, CoordinateLine> lineasPorEnvio = new HashMap<>();
+
     /**
      *
      * @param event
@@ -439,19 +480,180 @@ public class DashboardAdminViewController {
             System.out.println("No hay ruta disponible entre estas zonas.");
             return;
         }
+        List<Coordinate> waypoints = coordsDeRuta(ruta);
 
-        List<Coordinate> coordsRuta = ruta.getParadas().stream()
-                .map(z -> new Coordinate(z.getLatitud(), z.getAltitud()))
-                .toList();
+        ServicioRutas.fetchPolylineDrivingAsync(waypoints).thenAccept(path -> {
+            if (path == null || path.size() < 2) return;
 
-        ServicioRutas.dibujarRutaCarretera(mapView, coordsRuta, true);
+            // DIBUJA la ruta ruteada
+            Platform.runLater(() -> {
+                CoordinateLine line = new CoordinateLine(path)
+                        .setVisible(true)
+                        .setColor(Color.web("#3399ff"))
+                        .setWidth(4);
+                mapView.addCoordinateLine(line);
 
-        double latCentro = coordsRuta.stream().mapToDouble(Coordinate::getLatitude).average().orElse(0);
-        double lonCentro = coordsRuta.stream().mapToDouble(Coordinate::getLongitude).average().orElse(0);
-        mapView.setCenter(new Coordinate(latCentro, lonCentro));
-        mapView.setZoom(14);
-        List<Zona> paradas = ruta.getParadas();
-        refrescarLeyenda(paradas);
+                double latCentro = path.stream().mapToDouble(Coordinate::getLatitude).average().orElse(0);
+                double lonCentro = path.stream().mapToDouble(Coordinate::getLongitude).average().orElse(0);
+                mapView.setCenter(new Coordinate(latCentro, lonCentro));
+                mapView.setZoom(14);
+
+                // Leyenda
+                List<Zona> paradas = ruta.getParadas();
+                refrescarLeyenda(paradas);
+            });
+        });
+    }
+    @FXML
+    void clickAgregarRecurso(ActionEvent event) {
+
+    }
+    @FXML
+    void clickEnviarEquipo(ActionEvent event) {
+        // Validaciones
+        if (sistemaGestionDesastres == null) { mostrarInfo("Sistema no listo."); return; }
+
+        Equipo equipo = comboSeleccionarEquipo.getSelectionModel().getSelectedItem();
+        if (equipo == null) { mostrarInfo("Selecciona un equipo."); return; }
+
+        Zona origen = comboSalidaRecursos.getSelectionModel().getSelectedItem();
+        if (origen == null) { mostrarInfo("Selecciona la zona de salida."); return; }
+
+        Zona destino = sistemaGestionDesastres.getDesastreActivo();
+        if (destino == null) { mostrarInfo("Primero inicia un simulacro para tener un desastre activo."); return; }
+
+        if (vehiculoSeleccionado == null) { mostrarInfo("El equipo debe llevar 1 Vehículo."); return; }
+        if (recursosSeleccionados.isEmpty()) { mostrarInfo("Agrega al menos un recurso."); return; }
+
+        // Preparar carga
+        List<Recurso> carga = new ArrayList<>();
+        for (RecursoInventarioView v : recursosSeleccionados) {
+            TipoRecurso t = TipoRecurso.valueOf(v.getRecurso());
+            Recurso r = sistemaGestionDesastres.getRecursos().stream()
+                    .filter(rr -> rr.getTipo() == t && rr.getEstado() == EstadoRecurso.DISPONIBLE && rr.getCantidad() > 0)
+                    .findFirst().orElse(null);
+            if (r != null) {
+                r.setCantidad(r.getCantidad() - 1);
+                if (r.getCantidad() == 0) r.setEstado(EstadoRecurso.ASIGNADO);
+                carga.add(new Recurso("ENV-" + r.getIdRecurso(), r.getTipo(), 1, EstadoRecurso.EN_RUTA));
+            }
+        }
+
+        // Reservar vehículo
+        vehiculoSeleccionado.setCantidad(vehiculoSeleccionado.getCantidad() - 1);
+        if (vehiculoSeleccionado.getCantidad() == 0) vehiculoSeleccionado.setEstado(EstadoRecurso.ASIGNADO);
+        Recurso vehiculoParaViajar =
+                new Recurso("ENV-" + vehiculoSeleccionado.getIdRecurso(), TipoRecurso.VEHICULO, 1, EstadoRecurso.EN_RUTA);
+
+        vehiculoParaViajar.setCapacidadPasajeros(vehiculoSeleccionado.getCapacidadPasajeros());
+        vehiculoParaViajar.setVelocidadKmH(vehiculoSeleccionado.getVelocidadKmH());
+        // Crear equipo
+        Equipo equipoListo = sistemaGestionDesastres.crearEquipo(origen, destino, vehiculoParaViajar, List.of(), carga);
+        sistemaGestionDesastres.planearYLanzarSimulacion(equipoListo);
+
+        // Ruta lógica (nodos → waypoints OSRM)
+        Ruta ruta = sistemaGestionDesastres.getGrafo().calcularRutaMasCorta(origen, sistemaGestionDesastres.getDesastreActivo());
+        if (ruta == null) { mostrarInfo("No hay ruta disponible entre el origen y el desastre."); return; }
+
+        List<Coordinate> coords = coordsDeRuta(ruta);
+
+        // === ID ÚNICO PARA TODO EL ENVÍO ===
+        final String envioId = "ENV-" + System.currentTimeMillis();
+        final Recurso vehiculoRef = vehiculoParaViajar;  // para la lambda
+        final Zona destinoRef = destino;
+
+        ServicioRutas.fetchPolylineDrivingAsync(coords).thenAccept(path -> {
+            if (path == null || path.size() < 2) return;
+
+            Platform.runLater(() -> {
+                // Dibuja y guarda la línea asociada a este envío
+                CoordinateLine line = new CoordinateLine(path)
+                        .setVisible(true)
+                        .setColor(Color.web("#3399ff"))
+                        .setWidth(4);
+                mapView.addCoordinateLine(line);
+                lineasPorEnvio.put(envioId, line);
+
+                // Centra
+                double latC = path.stream().mapToDouble(Coordinate::getLatitude).average().orElse(0);
+                double lonC = path.stream().mapToDouble(Coordinate::getLongitude).average().orElse(0);
+                mapView.setCenter(new Coordinate(latC, lonC));
+                mapView.setZoom(14);
+
+                // Animación sobre el MISMO path
+                double vel = vehiculoRef.getVelocidadKmH();
+                Runnable onLlegada = () -> llegadaDeEquipo(destinoRef, vehiculoRef);
+                iniciarAnimacionRutaSingleHUD(envioId, path, vel, /*idaYVuelta*/ true, onLlegada);
+            });
+        });
+
+        // Limpieza UI
+        recursosSeleccionados.clear();
+        vehiculoSeleccionado = null;
+        comboSeleccionarEquipo.getSelectionModel().clearSelection();
+        comboSalidaRecursos.getSelectionModel().clearSelection();
+
+        btnActualizarInventarioAdmin(null);
+        mostrarInfo("Equipo enviado. Observa el recorrido en el mapa.");
+    }
+    @FXML
+    void btnAsignarEquiposAdmin(ActionEvent event) {
+        // equipo seleccionado
+        Equipo equipo = comboSeleccionarEquipo.getSelectionModel().getSelectedItem();
+        if (equipo == null) {
+            mostrarInfo("Selecciona un equipo en el combo antes de agregar recursos.");
+            return;
+        }
+
+        // fila seleccionada en inventario
+        RecursoInventarioView fila = tablaGestionInventario.getSelectionModel().getSelectedItem();
+        if (fila == null) {
+            mostrarInfo("Selecciona un recurso en la tabla de inventario.");
+            return;
+        }
+
+        // tipo del recurso
+        TipoRecurso tipo;
+        try {
+            tipo = TipoRecurso.valueOf(fila.getRecurso());
+        } catch (Exception e) {
+            mostrarInfo("Tipo de recurso no reconocido: " + fila.getRecurso());
+            return;
+        }
+
+        // Buscar un recurso REAL disponible del sistema que coincida en tipo y estado DISPONIBLE
+        Recurso recursoReal = sistemaGestionDesastres.getRecursos().stream()
+                .filter(r -> r.getTipo() == tipo && r.getEstado() == EstadoRecurso.DISPONIBLE && r.getCantidad() > 0)
+                .findFirst().orElse(null);
+
+        if (recursoReal == null) {
+            mostrarInfo("No hay stock DISPONIBLE de " + tipo + " para asignar.");
+            return;
+        }
+
+        // Reglas:
+        // - Debe existir exactamente 1 VEHICULO para poder enviar
+        if (tipo == TipoRecurso.VEHICULO) {
+            if (vehiculoSeleccionado != null) {
+                mostrarInfo("Ya hay un vehículo seleccionado para este equipo.");
+                return;
+            }
+            // reserva lógica de 1 unidad de vehículo para este envío
+            if (recursoReal.getCantidad() <= 0) {
+                mostrarInfo("No hay unidades de vehículo disponibles.");
+                return;
+            }
+            vehiculoSeleccionado = recursoReal;
+            // reflejo visual simple: agrego una “línea” VEHICULO x1 a la lista local
+            recursosSeleccionados.add(new RecursoInventarioView("VEHICULO", 1, "RESERVADO"));
+            mostrarInfo("Vehículo agregado.");
+            return;
+        }
+
+        // Otros recursos (AGUA/ALIMENTO/MEDICINA/EQUIPO): agregamos una cantidad estándar o toda la fila
+        // Para no abrir diálogos, tomamos una unidad lógica (puedes cambiar a pedir cantidad).
+        recursosSeleccionados.add(new RecursoInventarioView(tipo.name(), 1, "RESERVADO"));
+        mostrarInfo(tipo.name() + " agregado (x1).");
     }
     /**
      * ---------------------------------------VENTANA DE ESTADISTICAS--------------------------------------
@@ -634,6 +836,10 @@ public class DashboardAdminViewController {
         }
     }
 
+    /**
+     *
+     * @param event
+     */
     @FXML
     void btnActualizarRecursosDistribuidos(ActionEvent event) {
         if (sistemaGestionDesastres == null) return;
@@ -663,6 +869,12 @@ public class DashboardAdminViewController {
         graficoRecursosDistribuidos.setLabelsVisible(true);
         graficoRecursosDistribuidos.setLegendVisible(true);
     }
+
+    /**
+     *
+     * @param t
+     * @return
+     */
     private Paint colorTipo(TipoZona t) {
         return switch (t) {
             case CIUDAD       -> Color.web("#2ecc71"); // verde
@@ -673,6 +885,11 @@ public class DashboardAdminViewController {
         };
     }
 
+    /**
+     *
+     * @param z
+     * @return
+     */
     private String etiquetaZona(Zona z) {
         String tipo = switch (z.getTipo()) {
             case CIUDAD -> "Ciudad";
@@ -683,6 +900,10 @@ public class DashboardAdminViewController {
         return tipo + " · " + z.getNombre();
     }
 
+    /**
+     *
+     * @param zonas
+     */
     private void refrescarLeyenda(List<Zona> zonas) {
         if (legendBox == null) return;
         legendBox.getChildren().clear();
@@ -768,17 +989,27 @@ public class DashboardAdminViewController {
         legendBox.toFront();
     }
 
+    /**
+     *
+     */
     private void bringOverlayToFront() {
         if (overlay != null) overlay.toFront();
         if (btnDer != null) btnDer.toFront();
         if (btnIzq != null) btnIzq.toFront();
     }
 
+    /**
+     *
+     */
     private void hookOverlayReapplier() {
         // Reaplica (remove+add) para sobrevivir a refrescos internos del WebView
         mapView.zoomProperty().addListener((o, a, b) -> reaplicarOverlaysDesastre());
         mapView.mapTypeProperty().addListener((o, a, b) -> reaplicarOverlaysDesastre());
     }
+
+    /**
+     *
+     */
     private void reaplicarOverlaysDesastre() {
         if (desastreActivo == null) return;
         if (markerDesastre != null) {
@@ -788,13 +1019,257 @@ public class DashboardAdminViewController {
         if (cCritico != null) { mapView.removeMapCircle(cCritico); mapView.addMapCircle(cCritico); }
         if (cModerado != null) { mapView.removeMapCircle(cModerado); mapView.addMapCircle(cModerado); }
         if (cEstable != null) { mapView.removeMapCircle(cEstable); mapView.addMapCircle(cEstable); }
+        for (CoordinateLine cl : lineasPorEnvio.values()) {
+            mapView.removeCoordinateLine(cl);
+            mapView.addCoordinateLine(cl);
+        }
     }
 
+    /**
+     *
+     */
     private void limpiarOverlaysDesastre() {
         if (markerDesastre != null) { mapView.removeMarker(markerDesastre); markerDesastre = null; }
         if (cCritico != null)  { mapView.removeMapCircle(cCritico);  cCritico = null; }
         if (cModerado != null) { mapView.removeMapCircle(cModerado); cModerado = null; }
         if (cEstable != null)  { mapView.removeMapCircle(cEstable);  cEstable = null; }
+    }
+
+    /**
+     *
+     * @param msg
+     */
+    private void mostrarInfo(String msg) {
+        System.out.println(msg);
+        Tooltip t = new Tooltip(msg);
+        t.setAutoHide(true);
+        t.show(paneMapa.getScene().getWindow());
+        // se oculta solo; si prefieres, usa Alert.
+    }
+
+    /**
+     *
+     * @param a
+     * @param b
+     * @return
+     */
+    private static double distKm(Zona a, Zona b) {
+        double R = 6371.0;
+        double lat1 = Math.toRadians(a.getLatitud()), lon1 = Math.toRadians(a.getAltitud());
+        double lat2 = Math.toRadians(b.getLatitud()), lon2 = Math.toRadians(b.getAltitud());
+        double dlat = lat2 - lat1, dlon = lon2 - lon1;
+        double h = Math.sin(dlat/2)*Math.sin(dlat/2) +
+                Math.cos(lat1)*Math.cos(lat2)*Math.sin(dlon/2)*Math.sin(dlon/2);
+        return 2 * R * Math.asin(Math.sqrt(h));
+    }
+
+    /**
+     *
+     * @param a
+     * @param b
+     * @return
+     */
+    private static double distKm(Coordinate a, Coordinate b) {
+        double R = 6371.0;
+        double lat1 = Math.toRadians(a.getLatitude()),  lon1 = Math.toRadians(a.getLongitude());
+        double lat2 = Math.toRadians(b.getLatitude()),  lon2 = Math.toRadians(b.getLongitude());
+        double dlat = lat2 - lat1, dlon = lon2 - lon1;
+        double h = Math.sin(dlat/2)*Math.sin(dlat/2) +
+                Math.cos(lat1)*Math.cos(lat2)*Math.sin(dlon/2)*Math.sin(dlon/2);
+        return 2 * R * Math.asin(Math.sqrt(h));
+    }
+
+    /**
+     *
+     */
+    private void conectarDesastreConTodasLasZonasMunicipio() {
+        if (sistemaGestionDesastres == null || desastreActivo == null) return;
+
+        sistemaGestionDesastres.getZonas().stream()
+                .filter(z -> z.getTipo() != TipoZona.DESASTRE)
+                .filter(z -> z.getMunicipio().equals(desastreActivo.getMunicipio()))
+                .forEach(z -> {
+                    double d = distKm(z, desastreActivo);
+                    // Si tu Grafo ya evita duplicados, basta con llamar a conectar:
+                    sistemaGestionDesastres.getGrafo().conectar(z, desastreActivo, d, true, 10);
+                });
+    }
+    /**
+     *
+     */
+    /** Suma de distancias (km) para una polilínea de coordenadas. */
+    private static double longitudRutaKm(List<Coordinate> coords) {
+        double d = 0;
+        for (int i = 1; i < coords.size(); i++) d += distKm(coords.get(i-1), coords.get(i));
+        return d;
+    }
+
+    /** Interpola un punto a lo largo de coords según fracción [0..1]. */
+    /**
+     *
+     * @param coords
+     * @param t
+     * @return
+     */
+    private static Coordinate puntoEnRuta(List<Coordinate> coords, double t) {
+        if (coords == null || coords.size() < 2) return null;
+        t = Math.max(0, Math.min(1, t));
+
+        // longitudes acumuladas
+        double total = 0;
+        double[] seg = new double[coords.size()-1];
+        for (int i=1;i<coords.size();i++){
+            double di = distKm(coords.get(i-1), coords.get(i));
+            seg[i-1] = di;
+            total += di;
+        }
+        double objetivo = t * total;
+
+        double acum = 0;
+        for (int i=0;i<seg.length;i++){
+            if (objetivo <= acum + seg[i] || i == seg.length-1){
+                double local = (objetivo - acum) / (seg[i] == 0 ? 1 : seg[i]);
+                Coordinate a = coords.get(i);
+                Coordinate b = coords.get(i+1);
+                double lat = a.getLatitude()  + (b.getLatitude()  - a.getLatitude())  * local;
+                double lon = a.getLongitude() + (b.getLongitude() - a.getLongitude()) * local;
+                return new Coordinate(lat, lon);
+            }
+            acum += seg[i];
+        }
+        return coords.get(coords.size()-1);
+    }
+
+    private static List<Coordinate> coordsDeRuta(Ruta ruta) {
+        if (ruta == null || ruta.getParadas() == null || ruta.getParadas().size() < 2) return List.of();
+        return ruta.getParadas().stream()
+                .map(z -> new Coordinate(z.getLatitud(), z.getAltitud()))
+                .toList();
+    }
+
+    /**
+     *
+     * @param id
+     */
+    private void detenerEnvio(String id) {
+        EnvioAnim e = enviosActivos.remove(id);
+        if (e != null) {
+            if (e.timeline != null) e.timeline.stop();
+            if (e.marker != null) mapView.removeMarker(e.marker);
+            if (e.hudRow != null) hudLista.getChildren().remove(e.hudRow);
+        }
+        Timeline t = vehAnims.remove(id);
+        if (t != null) t.stop();
+        Marker m = vehMarkers.remove(id);
+        if (m != null) mapView.removeMarker(m);
+        vehCoords.remove(id);
+
+        if (hudLista != null && hudLista.getChildren().isEmpty()) hudScroll.setVisible(false);
+        CoordinateLine cl = lineasPorEnvio.remove(id);
+        if (cl != null) mapView.removeCoordinateLine(cl);
+    }
+
+    private void iniciarAnimacionRuta(String envioId,
+                                      List<Coordinate> coords,
+                                      double velocidadKmH,
+                                      boolean idaYVuelta,
+                                      Runnable onLlegadaIda) {
+        // cancela animación y marcador previos de este envío (si existían)
+        detenerAnimacionDe(envioId);
+
+        vehCoords.put(envioId, coords);
+
+        // marcador por envío
+        Marker m;
+        try { m = Marker.createProvided(Marker.Provided.BLUE); }
+        catch (Throwable t) { m = Marker.createProvided(Marker.Provided.RED); }
+        m.setVisible(true).setPosition(coords.get(0));
+        mapView.addMarker(m);
+        vehMarkers.put(envioId, m);
+
+        // métricas
+        double distanciaKm = longitudRutaKm(coords);
+        double horas = (velocidadKmH <= 0) ? 1.0 : distanciaKm / velocidadKmH;
+        long durMs = (long) Math.max(500, horas * 3_600_000);
+
+        // crea HUD por envío
+        EnvioAnim ea = crearHudFilaEnvio(envioId, velocidadKmH, distanciaKm);
+        ea.marker = m;
+        ea.coords = coords;
+        ea.horasTotales = horas;
+        ea.t0 = System.currentTimeMillis();
+        enviosActivos.put(envioId, ea);
+
+        Timeline tl = new Timeline(
+                new KeyFrame(javafx.util.Duration.millis(40), e -> {
+                    long el = System.currentTimeMillis() - ea.t0;
+                    double t = Math.min(1.0, (double) el / durMs);
+
+                    Coordinate p = puntoEnRuta(ea.coords, t);
+                    if (p != null) ea.marker.setPosition(p);
+
+                    double restanteH = ea.horasTotales * (1 - t);
+                    int min = (int) Math.floor(restanteH * 60);
+                    int seg = (int) Math.round((restanteH * 3600) % 60);
+                    ea.lblETA.setText(String.format("ETA: %02d:%02d", min, seg));
+                    ea.progress.setProgress(t);
+
+                    if (t >= 1.0) {
+                        if (onLlegadaIda != null) onLlegadaIda.run();
+
+                        if (idaYVuelta) {
+                            iniciarAnimacionRuta(envioId, invertida(ea.coords), velocidadKmH, false, null);
+                        } else {
+                            vehAnims.remove(envioId);
+                        }
+                    }
+                })
+        );
+        tl.setCycleCount(Animation.INDEFINITE);
+        tl.play();
+        ea.timeline = tl;
+        vehAnims.put(envioId, tl);
+    }
+    private List<Coordinate> invertida(List<Coordinate> c) {
+        ArrayList<Coordinate> r = new ArrayList<>(c);
+        Collections.reverse(r);
+        return r;
+    }
+    private void detenerAnimacionDe(String envioId) {
+        Timeline t = vehAnims.remove(envioId);
+        if (t != null) t.stop();
+        Marker m = vehMarkers.remove(envioId);
+        if (m != null) mapView.removeMarker(m);
+    }
+    /**
+     *
+     */
+    private void detenerTodosLosEnvios() {
+        new ArrayList<>(enviosActivos.keySet()).forEach(this::detenerEnvio);
+        for (String id : new ArrayList<>(vehAnims.keySet())) detenerAnimacionDe(id);
+    }
+
+    /**
+     *
+     */
+    private void crearHudMulti() {
+        hudLista = new VBox(8);
+        hudLista.setPadding(new Insets(8));
+        hudLista.setBackground(new Background(new BackgroundFill(
+                Color.rgb(20,20,30,0.85), new CornerRadii(10), Insets.EMPTY)));
+        hudLista.setStyle("-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.45), 14, 0.3, 0, 2);");
+
+        hudScroll = new ScrollPane(hudLista);
+        hudScroll.setPrefWidth(260);
+        hudScroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        hudScroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        hudScroll.setBackground(Background.EMPTY);
+        hudScroll.setStyle("-fx-background-color: transparent;");
+
+        paneMapa.getChildren().add(hudScroll);
+        AnchorPane.setTopAnchor(hudScroll, 16.0);
+        AnchorPane.setRightAnchor(hudScroll, 16.0);
+        hudScroll.setVisible(false);
     }
     @FXML
     void btnActualizarRutas(ActionEvent event) {
@@ -803,11 +1278,6 @@ public class DashboardAdminViewController {
 
     @FXML
     void btnAgregarRuta(ActionEvent event) {
-
-    }
-
-    @FXML
-    void btnAsignarEquiposAdmin(ActionEvent event) {
 
     }
 
@@ -845,17 +1315,200 @@ public class DashboardAdminViewController {
     public void setSistemaGestionDesastres(SistemaGestionDesastres sistemaGestionDesastres) {
         this.sistemaGestionDesastres = sistemaGestionDesastres;
         prepararCacheMunicipios();
+
+        // --- Combo de equipos ---
+        comboSeleccionarEquipo.setItems(
+                FXCollections.observableArrayList(this.sistemaGestionDesastres.getEquipos())
+        );
+        comboSeleccionarEquipo.setConverter(new StringConverter<>() {
+            @Override public String toString(Equipo e) {
+                return (e == null) ? "" : e.getTipo().name() + " · " + e.getEstado().name();
+            }
+            @Override public Equipo fromString(String s) { return null; }
+        });
+        comboSeleccionarEquipo.setTooltip(new Tooltip(
+                "Selecciona el equipo que vas a armar y enviar (requiere 1 Vehículo)."
+        ));
+
+        // --- Combo de salida (origen) ---
+        List<Zona> salidas = this.sistemaGestionDesastres.getZonas().stream()
+                .filter(z -> z.getTipo() != TipoZona.DESASTRE)
+                .filter(z -> {
+                    Zona da = this.sistemaGestionDesastres.getDesastreActivo();
+                    return (da == null) || z.getMunicipio().equals(da.getMunicipio());
+                })
+                .toList();
+        comboSalidaRecursos.setItems(FXCollections.observableArrayList(salidas));
+        comboSalidaRecursos.setConverter(new StringConverter<>() {
+            @Override public String toString(Zona z) { return z == null ? "" : z.getNombre(); }
+            @Override public Zona fromString(String s) { return null; }
+        });
+
         // Si el mapa ya está inicializado, muestra de una
         if (mapView != null && mapView.initializedProperty().get()) {
             mostrarInicioDeMunicipios();
         } else {
-            // Si no, espera a que esté listo una única vez
             mapView.initializedProperty().addListener((obs, was, ready) -> {
-                if (ready) {
-                    mostrarInicioDeMunicipios();
-                }
+                if (ready) mostrarInicioDeMunicipios();
             });
         }
+        refrescarComboSalidaPorDesastre();
+    }
+    private void refrescarComboSalidaPorDesastre() {
+        Zona da = sistemaGestionDesastres.getDesastreActivo();
+        List<Zona> salidas = sistemaGestionDesastres.getZonas().stream()
+                .filter(z -> z.getTipo() != TipoZona.DESASTRE)
+                .filter(z -> da == null || z.getMunicipio().equals(da.getMunicipio()))
+                .toList();
+        comboSalidaRecursos.setItems(FXCollections.observableArrayList(salidas));
+        comboSalidaRecursos.setConverter(new StringConverter<>() {
+            @Override public String toString(Zona z){ return z==null? "" : z.getNombre(); }
+            @Override public Zona fromString(String s){ return null; }
+        });
+    }
+    private void llegadaDeEquipo(Zona destinoDesastre, Recurso vehiculo) {
+        // Usa la instancia “oficial” del modelo
+        Zona dz = sistemaGestionDesastres.getDesastreActivo();
+        if (dz == null) return;
+
+        int capacidad = Math.max(1, vehiculo.getCapacidadPasajeros());
+        int tot = dz.getHabitantes();               // o getPersonasTotales() si esa es tu fuente
+        int eva = dz.getPersonasEvacuadas();
+        int pen = Math.max(0, tot - eva);
+
+        int evacuarAhora = Math.min(capacidad, pen);
+        dz.setPersonasEvacuadas(eva + evacuarAhora);
+
+        Platform.runLater(this::actualizarHudDesastre);
+    }
+    private void actualizarHudDesastre() {
+        Zona dz = (sistemaGestionDesastres != null) ? sistemaGestionDesastres.getDesastreActivo() : null;
+        if (dz == null || hudDesastre == null) return;
+
+        int tot = dz.getHabitantes(); // o getPersonasTotales()
+        int eva = dz.getPersonasEvacuadas();
+        int pen = Math.max(0, tot - eva);
+
+        lblTotales.setText("Total: " + tot);
+        lblEvacuadas.setText("Evacuadas: " + eva);
+        lblPendientes.setText("Pendientes: " + pen);
+    }
+    private void crearHudDesastre() {
+        if (hudDesastre != null) return;
+        lblDesastreTitulo = new Label("Desastre activo");
+        lblDesastreTitulo.setStyle("-fx-text-fill: white; -fx-font-weight: 700; -fx-font-size: 13px;");
+        lblTotales   = new Label();
+        lblEvacuadas = new Label();
+        lblPendientes= new Label();
+        for (Label l : List.of(lblTotales, lblEvacuadas, lblPendientes)) {
+            l.setStyle("-fx-text-fill: white; -fx-font-size: 12px;");
+        }
+        hudDesastre = new VBox(4, lblDesastreTitulo, lblTotales, lblEvacuadas, lblPendientes);
+        hudDesastre.setPadding(new Insets(10));
+        hudDesastre.setBackground(new Background(new BackgroundFill(
+                Color.rgb(20,20,30,0.85), new CornerRadii(10), Insets.EMPTY)));
+        paneMapa.getChildren().add(hudDesastre);
+        AnchorPane.setTopAnchor(hudDesastre, 16.0);
+        AnchorPane.setLeftAnchor(hudDesastre, 16.0);
     }
 
+    private EnvioAnim crearHudFilaEnvio(String envioId, double velocidadKmH, double distanciaKm) {
+        if (hudLista == null) crearHudMulti();
+
+        Label titulo = new Label("Envío " + envioId);
+        titulo.setStyle("-fx-text-fill: white; -fx-font-weight: 700; -fx-font-size: 13px;");
+
+        ProgressBar pb = new ProgressBar(0);
+        pb.setPrefWidth(220);
+
+        Label lblETA  = new Label("ETA: —");
+        Label lblDist = new Label(String.format("Dist.: %.2f km", distanciaKm));
+        Label lblVel  = new Label(String.format("Vel.: %.0f km/h", velocidadKmH));
+        for (Label l : List.of(lblETA, lblDist, lblVel)) {
+            l.setStyle("-fx-text-fill: white; -fx-font-size: 12px;");
+        }
+
+        VBox fila = new VBox(6, titulo, pb, lblETA, lblDist, lblVel);
+        fila.setPadding(new Insets(10));
+        fila.setBackground(new Background(new BackgroundFill(
+                Color.rgb(20,20,30,0.85), new CornerRadii(10), Insets.EMPTY)));
+        fila.setStyle("-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.45), 14, 0.3, 0, 2);");
+
+        hudLista.getChildren().add(fila);
+        hudScroll.setVisible(true);
+
+        EnvioAnim ea = new EnvioAnim();
+        ea.id = envioId;
+        ea.progress = pb;
+        ea.lblTitulo = titulo;
+        ea.lblETA = lblETA;
+        ea.lblDist = lblDist;
+        ea.lblVel = lblVel;
+        ea.hudRow = fila;
+        return ea;
+    }
+    private void iniciarAnimacionRutaSingleHUD(String envioId,
+                                               List<Coordinate> path,
+                                               double velocidadKmH,
+                                               boolean idaYVuelta,
+                                               Runnable onLlegadaIda) {
+        // si ya existía, detén y borra todo (HUD incluido)
+        if (enviosActivos.containsKey(envioId)) {
+            detenerEnvio(envioId);
+        }
+        // crea HUD UNA SOLA VEZ
+        double distanciaKm = longitudRutaKm(path);
+        EnvioAnim ea = crearHudFilaEnvio(envioId, velocidadKmH, distanciaKm);
+        ea.coords = path;
+        ea.horasTotales = (velocidadKmH <= 0) ? 1.0 : (distanciaKm / velocidadKmH);
+        ea.t0 = System.currentTimeMillis();
+        enviosActivos.put(envioId, ea);
+
+        // marcador
+        Marker m;
+        try { m = Marker.createProvided(Marker.Provided.BLUE); }
+        catch (Throwable t) { m = Marker.createProvided(Marker.Provided.RED); }
+        m.setVisible(true).setPosition(path.get(0));
+        mapView.addMarker(m);
+        ea.marker = m;
+
+        Timeline tl = new Timeline(new KeyFrame(javafx.util.Duration.millis(40), e -> {
+            long el = System.currentTimeMillis() - ea.t0;
+            long durMs = (long) Math.max(500, ea.horasTotales * 3_600_000);
+            double t = Math.min(1.0, (double) el / durMs);
+
+            Coordinate p = puntoEnRuta(ea.coords, t);
+            if (p != null) ea.marker.setPosition(p);
+
+            double restanteH = ea.horasTotales * (1 - t);
+            int min = (int)Math.floor(restanteH * 60);
+            int seg = (int)Math.round((restanteH * 3600) % 60);
+            ea.lblETA.setText(String.format("ETA: %02d:%02d", min, seg));
+            ea.progress.setProgress(t);
+
+            if (t >= 1.0) {
+                // Llegada de la ida
+                if (!ea.enRegreso && idaYVuelta) {
+                    if (onLlegadaIda != null) onLlegadaIda.run();
+
+                    // Preparar regreso REUSANDO MISMO HUD y MISMO MARCADOR
+                    ea.enRegreso = true;
+                    ea.coords = invertida(ea.coords);
+                    double distKmReg = longitudRutaKm(ea.coords);
+                    ea.horasTotales = (velocidadKmH <= 0) ? 1.0 : (distKmReg / velocidadKmH);
+                    ea.t0 = System.currentTimeMillis();
+                    ea.lblTitulo.setText("Envío " + envioId + " (regreso)");
+                    ea.lblDist.setText(String.format("Dist.: %.2f km", distKmReg));
+                    ea.progress.setProgress(0);
+                    return; // la MISMA timeline continua ahora para el regreso
+                }
+
+                // Fin total (terminó el regreso o no había regreso)
+                detenerEnvio(envioId); // borra HUD, marcador, timeline y caches
+            }
+        }));
+        tl.setCycleCount(Animation.INDEFINITE);
+        tl.play();
+        ea.timeline = tl;
+    }
 }

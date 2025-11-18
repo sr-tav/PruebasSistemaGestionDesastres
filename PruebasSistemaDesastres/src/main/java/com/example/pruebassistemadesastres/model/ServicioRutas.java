@@ -17,6 +17,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 public class ServicioRutas {
@@ -24,16 +25,19 @@ public class ServicioRutas {
     private static final ObjectMapper MAPPER = new ObjectMapper();
     private static final HttpClient HTTP = HttpClient.newHttpClient();
 
-    // Mantén una referencia a la última línea trazada
+    // Mantén una referencia a la última línea trazada (para la función de demo)
     private static CoordinateLine rutaActual;
 
-    /** Llama a OSRM y dibuja la ruta siguiendo carreteras. */
-    public static void dibujarRutaCarretera(MapView mapView,
-                                            List<Coordinate> waypoints,
-                                            boolean limpiarPrevias) {
-        if (mapView == null || waypoints == null || waypoints.size() < 2) return;
+    /** === ================
+     *  UTILIDADES NUEVAS
+     *  ================== */
 
-        // OSRM espera lon,lat;lon,lat;...
+    /** Devuelve la polilínea OSRM (GeoJSON o polyline6 como fallback). */
+    public static CompletableFuture<List<Coordinate>> fetchPolylineDrivingAsync(List<Coordinate> waypoints) {
+        if (waypoints == null || waypoints.size() < 2) {
+            return CompletableFuture.completedFuture(List.of());
+        }
+
         String coordsPath = waypoints.stream()
                 .map(c -> c.getLongitude() + "," + c.getLatitude())
                 .collect(Collectors.joining(";"));
@@ -46,17 +50,13 @@ public class ServicioRutas {
                 .GET()
                 .build();
 
-        HTTP.sendAsync(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8))
+        return HTTP.sendAsync(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8))
                 .thenCompose(resp -> {
-                    String body = resp.body();
-                    List<Coordinate> coords = parsearCoordenadasGeoJson(body);
-                    if (coords.size() >= 3) {
-                        return java.util.concurrent.CompletableFuture.completedFuture(coords);
-                    }
-                    // Fallback: probar con polyline6
+                    List<Coordinate> coords = parsearCoordenadasGeoJson(resp.body());
+                    if (coords.size() >= 3) return CompletableFuture.completedFuture(coords);
+
                     String urlPolyline6 = "https://router.project-osrm.org/route/v1/driving/" + coordsPath
                             + "?overview=full&geometries=polyline6";
-                    System.out.println("[OSRM] GeoJSON devolvió " + coords.size() + " puntos. Probando polyline6...");
                     HttpRequest req2 = HttpRequest.newBuilder(URI.create(urlPolyline6))
                             .header("Accept", "application/json")
                             .GET()
@@ -68,42 +68,60 @@ public class ServicioRutas {
                 .exceptionally(ex -> {
                     ex.printStackTrace();
                     return List.of();
-                })
-                .thenAccept(coords -> {
-                    System.out.println("[OSRM] puntos recibidos: " + coords.size());
-                    if (coords.size() < 2) return;
-
-                    CoordinateLine line = new CoordinateLine(coords)
-                            .setVisible(true)
-                            .setClosed(false)
-                            .setColor(Color.DODGERBLUE)
-                            .setWidth(4);
-
-                    Platform.runLater(() -> {
-                        if (limpiarPrevias && rutaActual != null) {
-                            mapView.removeCoordinateLine(rutaActual);
-                            rutaActual = null;
-                        }
-                        rutaActual = line;
-                        mapView.addCoordinateLine(line);
-
-                        Extent ext = calcularExtent(coords);
-                        if (ext != null) {
-                            mapView.setExtent(ext);
-                        }
-                    });
                 });
     }
 
-    /** Parsea GeoJSON: routes[0].geometry.coordinates -> [[lon,lat], ...] */
-    private static List<Coordinate> parsearCoordenadasGeoJson(String json) {
+    /** Longitud total en km de una polilínea (Haversine). */
+    public static double longitudKm(List<Coordinate> poly) {
+        if (poly == null || poly.size() < 2) return 0.0;
+        double total = 0.0;
+        for (int i = 1; i < poly.size(); i++) {
+            total += haversineKm(
+                    poly.get(i-1).getLatitude(), poly.get(i-1).getLongitude(),
+                    poly.get(i).getLatitude(),  poly.get(i).getLongitude()
+            );
+        }
+        return total;
+    }
+
+    /** Punto interpolado a una distancia acumulada (km) sobre la polilínea. */
+    public static Coordinate samplearPorDistancia(List<Coordinate> poly, double dKm) {
+        if (poly == null || poly.isEmpty()) return null;
+        if (dKm <= 0) return poly.get(0);
+
+        double acumulada = 0.0;
+        for (int i = 1; i < poly.size(); i++) {
+            Coordinate a = poly.get(i-1);
+            Coordinate b = poly.get(i);
+            double seg = haversineKm(a.getLatitude(), a.getLongitude(), b.getLatitude(), b.getLongitude());
+            if (acumulada + seg >= dKm) {
+                double resto = dKm - acumulada;
+                double t = seg <= 0 ? 0 : (resto / seg);
+                double lat = a.getLatitude()  + t * (b.getLatitude()  - a.getLatitude());
+                double lon = a.getLongitude() + t * (b.getLongitude() - a.getLongitude());
+                return new Coordinate(lat, lon);
+            }
+            acumulada += seg;
+        }
+        return poly.get(poly.size() - 1);
+    }
+
+    /** Haversine en km. */
+    public static double haversineKm(double lat1, double lon1, double lat2, double lon2) {
+        double R = 6371.0;
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(dLat/2)*Math.sin(dLat/2)
+                + Math.cos(Math.toRadians(lat1))*Math.cos(Math.toRadians(lat2))
+                * Math.sin(dLon/2)*Math.sin(dLon/2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return R * c;
+    }
+
+    /** Parsers expuestos públicamente (se usaban adentro). */
+    public static List<Coordinate> parsearCoordenadasGeoJson(String json) {
         try {
             JsonNode root = MAPPER.readTree(json);
-            // Asegúrate de que no hubo error de OSRM
-            String code = root.path("code").asText("");
-            if (!code.isEmpty() && !"Ok".equalsIgnoreCase(code)) {
-                System.out.println("[OSRM] code=" + code);
-            }
             JsonNode coords = root.path("routes").path(0).path("geometry").path("coordinates");
             List<Coordinate> out = new ArrayList<>();
             if (coords.isArray()) {
@@ -120,14 +138,9 @@ public class ServicioRutas {
         }
     }
 
-    /** Parsea polyline6: routes[0].geometry -> String y lo decodifica. */
-    private static List<Coordinate> parsearCoordenadasPolyline6(String json) {
+    public static List<Coordinate> parsearCoordenadasPolyline6(String json) {
         try {
             JsonNode root = MAPPER.readTree(json);
-            String code = root.path("code").asText("");
-            if (!code.isEmpty() && !"Ok".equalsIgnoreCase(code)) {
-                System.out.println("[OSRM] code=" + code);
-            }
             String encoded = root.path("routes").path(0).path("geometry").asText("");
             if (encoded.isEmpty()) return List.of();
             return decodePolyline6(encoded);
@@ -137,8 +150,7 @@ public class ServicioRutas {
         }
     }
 
-    /** Decodificador polyline precision 6 (Mapbox/OSRM). */
-    private static List<Coordinate> decodePolyline6(String polyline) {
+    public static List<Coordinate> decodePolyline6(String polyline) {
         List<Coordinate> coords = new ArrayList<>();
         int index = 0, len = polyline.length();
         long lat = 0, lon = 0;
@@ -170,7 +182,73 @@ public class ServicioRutas {
         return coords;
     }
 
-    /** Calcula un Extent a partir de la lista de coordenadas. */
+    /** =============================
+     *  TU MÉTODO EXISTENTE (dibujo)
+     *  ============================= */
+    public static void dibujarRutaCarretera(MapView mapView,
+                                            List<Coordinate> waypoints,
+                                            boolean limpiarPrevias) {
+        if (mapView == null || waypoints == null || waypoints.size() < 2) return;
+
+        String coordsPath = waypoints.stream()
+                .map(c -> c.getLongitude() + "," + c.getLatitude())
+                .collect(Collectors.joining(";"));
+
+        String urlGeoJson = "https://router.project-osrm.org/route/v1/driving/" + coordsPath
+                + "?overview=full&geometries=geojson";
+
+        HttpRequest req = HttpRequest.newBuilder(URI.create(urlGeoJson))
+                .header("Accept", "application/json")
+                .GET()
+                .build();
+
+        HTTP.sendAsync(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8))
+                .thenCompose(resp -> {
+                    String body = resp.body();
+                    List<Coordinate> coords = parsearCoordenadasGeoJson(body);
+                    if (coords.size() >= 3) {
+                        return java.util.concurrent.CompletableFuture.completedFuture(coords);
+                    }
+                    String urlPolyline6 = "https://router.project-osrm.org/route/v1/driving/" + coordsPath
+                            + "?overview=full&geometries=polyline6";
+                    HttpRequest req2 = HttpRequest.newBuilder(URI.create(urlPolyline6))
+                            .header("Accept", "application/json")
+                            .GET()
+                            .build();
+                    return HTTP.sendAsync(req2, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8))
+                            .thenApply(HttpResponse::body)
+                            .thenApply(ServicioRutas::parsearCoordenadasPolyline6);
+                })
+                .exceptionally(ex -> {
+                    ex.printStackTrace();
+                    return List.of();
+                })
+                .thenAccept(coords -> {
+                    if (coords.size() < 2) return;
+
+                    CoordinateLine line = new CoordinateLine(coords)
+                            .setVisible(true)
+                            .setClosed(false)
+                            .setColor(Color.DODGERBLUE)
+                            .setWidth(4);
+
+                    Platform.runLater(() -> {
+                        if (limpiarPrevias && rutaActual != null) {
+                            mapView.removeCoordinateLine(rutaActual);
+                            rutaActual = null;
+                        }
+                        rutaActual = line;
+                        mapView.addCoordinateLine(line);
+
+                        Extent ext = calcularExtent(coords);
+                        if (ext != null) {
+                            mapView.setExtent(ext);
+                        }
+                    });
+                });
+
+    }
+
     private static Extent calcularExtent(List<Coordinate> coords) {
         if (coords == null || coords.isEmpty()) return null;
 

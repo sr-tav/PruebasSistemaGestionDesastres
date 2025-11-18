@@ -28,3 +28,27 @@
 .btn_minimizar:hover{
     -fx-background-color: #3c70c1;
 }
+.btn_agregar_tabla_recursos{
+    -fx-background-color: #141587;
+    -fx-background-radius: 35;
+}
+.btn_agregar_tabla_recursos:hover{
+    -fx-background-color: #308022;
+    -fx-background-radius: 35;
+}
+.btn_actualizar_tabla_recursos{
+    -fx-background-color: #141587;
+    -fx-background-radius: 35;
+}
+.btn_actualizar_tabla_recursos:hover{
+    -fx-background-color: #3c70c1;
+    -fx-background-radius: 35;
+}
+.btn_subir_recurso_equipo{
+    -fx-background-color: #141587;
+    -fx-background-radius: 35;
+}
+.btn_subir_recurso_equipo:hover{
+    -fx-background-color: #308022;
+    -fx-background-radius: 35;
+}

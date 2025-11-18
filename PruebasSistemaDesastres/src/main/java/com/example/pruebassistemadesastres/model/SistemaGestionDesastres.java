@@ -19,6 +19,11 @@ public class SistemaGestionDesastres {
     private final List<Ruta> rutas = new ArrayList<>();
     private final List<Evacuacion> evacuaciones = new ArrayList<>();
     private final List<Municipio> municipios = new ArrayList<>();
+    private final List<Equipo> equiposActivos = new ArrayList<>();
+    private final List<EquipoListener> listeners = new ArrayList<>();
+    private volatile double factorAceleracion = 1.0;
+    private java.util.concurrent.ScheduledExecutorService scheduler;
+    private long lastTickMillis = 0L;
 
     private SistemaGestionDesastres() {}
 
@@ -214,7 +219,9 @@ public class SistemaGestionDesastres {
         ultimoDesastre = zDesastre;
 
         agregarZona(zDesastre); // ya mete al grafo
+        conectarDesastreConVecinos(zDesastre, 3);
 
+        desastreActivo = zDesastre;
         return zDesastre;
     }
 
@@ -235,6 +242,238 @@ public class SistemaGestionDesastres {
                 * Math.sin(dLon/2)*Math.sin(dLon/2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
         return R * c;
+    }
+    private void conectarDesastreConVecinos(Zona zDesastre, int k) {
+        List<Zona> candidatas = zonas.stream()
+                .filter(z -> z.getMunicipio().equals(zDesastre.getMunicipio()))
+                .filter(z -> z != zDesastre)
+                .filter(z -> z.getTipo() != TipoZona.DESASTRE)
+                .sorted(Comparator.comparingDouble(z ->
+                        haversineKm(zDesastre.getLatitud(), zDesastre.getAltitud(),
+                                z.getLatitud(), z.getAltitud())))
+                .toList();
+
+        int enlaces = Math.min(k, candidatas.size());
+        for (int i = 0; i < enlaces; i++) {
+            Zona otra = candidatas.get(i);
+            double distKm = haversineKm(zDesastre.getLatitud(), zDesastre.getAltitud(),
+                    otra.getLatitud(), otra.getAltitud());
+            // peso = distKm; bidireccional = true; capacidad arbitraria 10
+            grafo.conectar(zDesastre, otra, distKm, true, 10);
+            grafo.conectar(otra, zDesastre, distKm, true, 10);
+        }
+    }
+
+    /**
+     *
+     * @param origen
+     * @param destinoDesastre
+     * @param vehiculo
+     * @param rescatistas
+     * @param cargaOpcional
+     * @return
+     */
+    public Equipo crearEquipo(Zona origen, Zona destinoDesastre, Recurso vehiculo, List<Rescatista> rescatistas, List<Recurso> cargaOpcional) {
+        if (origen == null || destinoDesastre == null || vehiculo == null) return null;
+        if (!vehiculo.esVehiculo()) return null;
+
+        Equipo equipo = new Equipo(TipoEquipo.LOGISTICA, EstadoEquipo.DISPONIBLE); // o según lo elijas en UI
+        equipo.setZonaOrigen(origen);
+        equipo.setZonaDestinoDesastre(destinoDesastre);
+        equipo.setZonaDestinoRegreso(origen);
+
+        // Vehículo y parámetros
+        equipo.getRecursos().add(vehiculo);
+        equipo.setCapacidadPasajeros(vehiculo.getCapacidadPasajeros());
+        equipo.setVelocidadKmH(vehiculo.getVelocidadKmH());
+
+        // Rescatistas
+        if (rescatistas != null) equipo.getRescatistas().addAll(rescatistas);
+
+        // Carga (alimentos, medicina, etc.)
+        if (cargaOpcional != null) equipo.getRecursos().addAll(cargaOpcional);
+
+        // Reservar/poner en ruta recursos
+        vehiculo.setEstado(EstadoRecurso.EN_RUTA);
+        if (cargaOpcional != null) {
+            for (Recurso r : cargaOpcional) r.setEstado(EstadoRecurso.EN_RUTA);
+        }
+
+        // Estado inicial
+        equipo.setEstadoMision(EstadoMision.EN_RUTA_IDA);
+
+        equipos.add(equipo);         // catálogo
+        equiposActivos.add(equipo);  // simulación
+        return equipo;
+    }
+
+    /**
+     *
+     * @param equipo
+     */
+    public void planearYLanzarSimulacion(Equipo equipo) {
+        if (equipo == null) return;
+
+        // Waypoints ida y regreso (solo extremos; OSRM hace el resto)
+        var ida = java.util.List.of(
+                new com.sothawo.mapjfx.Coordinate(
+                        equipo.getZonaOrigen().getLatitud(),
+                        equipo.getZonaOrigen().getAltitud()
+                ),
+                new com.sothawo.mapjfx.Coordinate(
+                        equipo.getZonaDestinoDesastre().getLatitud(),
+                        equipo.getZonaDestinoDesastre().getAltitud()
+                )
+        );
+
+        var regreso = java.util.List.of(
+                new com.sothawo.mapjfx.Coordinate(
+                        equipo.getZonaDestinoDesastre().getLatitud(),
+                        equipo.getZonaDestinoDesastre().getAltitud()
+                ),
+                new com.sothawo.mapjfx.Coordinate(
+                        equipo.getZonaDestinoRegreso().getLatitud(),
+                        equipo.getZonaDestinoRegreso().getAltitud()
+                )
+        );
+
+        // Obtener polilíneas y luego iniciar motor
+        ServicioRutas.fetchPolylineDrivingAsync(ida).thenAccept(polyIda -> {
+            equipo.setPolylineIda(polyIda);
+            equipo.setDistanciaTotalKmIda(ServicioRutas.longitudKm(polyIda));
+
+            ServicioRutas.fetchPolylineDrivingAsync(regreso).thenAccept(polyReg -> {
+                equipo.setPolylineRegreso(polyReg);
+                equipo.setDistanciaTotalKmRegreso(ServicioRutas.longitudKm(polyReg));
+
+                // Notifica a la UI que ya puede dibujar líneas si quiere
+                for (var l : listeners) l.onEquipoRutasListas(equipo);
+
+                // Arranca el scheduler si no está
+                startSchedulerIfNeeded();
+            });
+        });
+    }
+
+    /**
+     *
+     */
+    private void startSchedulerIfNeeded() {
+        if (scheduler != null) return;
+        scheduler = java.util.concurrent.Executors.newSingleThreadScheduledExecutor(r -> {
+            Thread t = new Thread(r, "sim-equipos");
+            t.setDaemon(true);
+            return t;
+        });
+        lastTickMillis = System.currentTimeMillis();
+        scheduler.scheduleAtFixedRate(this::tickSimulacion, 0, 100, java.util.concurrent.TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     *
+     */
+    private void tickSimulacion() {
+        long now = System.currentTimeMillis();
+        double deltaHoras = ((now - lastTickMillis) / 3600000.0) * factorAceleracion;
+        lastTickMillis = now;
+
+        if (deltaHoras <= 0) return;
+
+        List<Equipo> paraRemover = new ArrayList<>();
+
+        for (Equipo e : new ArrayList<>(equiposActivos)) {
+            try {
+                switch (e.getEstadoMision()) {
+                    case EN_RUTA_IDA -> avanzarSobrePolyline(e, true, deltaHoras, paraRemover);
+                    case ATENDIENDO -> {
+                        // Atención instantánea simple (puedes meter un delay si quieres)
+                        onLlegadaADesastre(e);
+                    }
+                    case EN_RUTA_REGRESO -> avanzarSobrePolyline(e, false, deltaHoras, paraRemover);
+                    case COMPLETADO, CANCELADO -> paraRemover.add(e);
+                }
+            } catch (Throwable t) {
+                t.printStackTrace();
+                paraRemover.add(e);
+            }
+        }
+
+        if (!paraRemover.isEmpty()) equiposActivos.removeAll(paraRemover);
+    }
+
+    /**
+     *
+     * @param e
+     * @param ida
+     * @param deltaHoras
+     * @param paraRemover
+     */
+    private void avanzarSobrePolyline(Equipo e, boolean ida, double deltaHoras, List<Equipo> paraRemover) {
+        List<com.sothawo.mapjfx.Coordinate> poly = ida ? e.getPolylineIda() : e.getPolylineRegreso();
+        if (poly == null || poly.size() < 2) {
+            // si no hay polyline aún, espera
+            return;
+        }
+
+        double v = Math.max(5.0, e.getVelocidadKmH()); // safety
+        double dAvanza = v * deltaHoras;
+
+        if (ida) {
+            e.setDistanciaRecorridaKmIda(e.getDistanciaRecorridaKmIda() + dAvanza);
+            double d = e.getDistanciaRecorridaKmIda();
+            double total = e.getDistanciaTotalKmIda();
+
+            var pos = ServicioRutas.samplearPorDistancia(poly, d);
+            if (pos != null) {
+                for (var l : listeners) l.onEquipoPosUpdate(e, pos);
+            }
+            if (d >= total) {
+                e.setEstadoMision(EstadoMision.ATENDIENDO);
+                for (var l : listeners) l.onEquipoEstadoUpdate(e, EstadoMision.ATENDIENDO);
+            }
+        } else {
+            e.setDistanciaRecorridaKmRegreso(e.getDistanciaRecorridaKmRegreso() + dAvanza);
+            double d = e.getDistanciaRecorridaKmRegreso();
+            double total = e.getDistanciaTotalKmRegreso();
+
+            var pos = ServicioRutas.samplearPorDistancia(poly, d);
+            if (pos != null) {
+                for (var l : listeners) l.onEquipoPosUpdate(e, pos);
+            }
+            if (d >= total) {
+                onLlegadaAOrigen(e);
+                paraRemover.add(e);
+            }
+        }
+    }
+
+    /**
+     *
+     * @param e
+     */
+    private void onLlegadaADesastre(Equipo e) {
+        Zona z = getDesastreActivo();
+        if (z != null) {
+            int quedan = Math.max(0, z.getPersonasTotales());
+            int evacuar = Math.min(e.getCapacidadPasajeros(), quedan);
+            z.setPersonasTotales(quedan - evacuar);
+            z.setPersonasEvacuadas(z.getPersonasEvacuadas() + evacuar);
+        }
+        e.setEstadoMision(EstadoMision.EN_RUTA_REGRESO);
+        for (var l : listeners) l.onEquipoEstadoUpdate(e, EstadoMision.EN_RUTA_REGRESO);
+    }
+
+    /**
+     *
+     * @param e
+     */
+    private void onLlegadaAOrigen(Equipo e) {
+        // Liberar recursos a DISPONIBLE
+        for (Recurso r : e.getRecursos()) {
+            if (r.getEstado() == EstadoRecurso.EN_RUTA) r.setEstado(EstadoRecurso.DISPONIBLE);
+        }
+        e.setEstadoMision(EstadoMision.COMPLETADO);
+        for (var l : listeners) l.onEquipoEstadoUpdate(e, EstadoMision.COMPLETADO);
     }
     /**
      * Metodo para crear un sistema de gestion con datos quemados
@@ -757,6 +996,7 @@ public class SistemaGestionDesastres {
         zCiudad.getInventario().put(TipoRecurso.ALIMENTO, 4000);
         zRefugio.getInventario().put(TipoRecurso.ALIMENTO, 1500);
         zRefugio.getInventario().put(TipoRecurso.MEDICINA, 300);
+        zCiudad.getInventario().put(TipoRecurso.VEHICULO, 4);
 
 
         Rescatista r1 = new Rescatista("Ana Gómez",  TipoEquipo.MEDICO);
@@ -776,10 +1016,25 @@ public class SistemaGestionDesastres {
         s.getZonas().get(0).getEquipos().add(e2);
         s.getZonas().get(1).getEquipos().add(e3);
 
-
+        ArbolDistribuccion arbol = new ArbolDistribuccion();
         s.agregarRecurso(new Recurso("R-AG-01", TipoRecurso.AGUA, 2000, EstadoRecurso.DISPONIBLE));
         s.agregarRecurso(new Recurso("R-AL-01", TipoRecurso.ALIMENTO, 3500, EstadoRecurso.EN_RUTA));
         s.agregarRecurso(new Recurso("R-ME-01", TipoRecurso.MEDICINA, 600, EstadoRecurso.DISPONIBLE));
+        Recurso v1 = new Recurso("V-01", TipoRecurso.VEHICULO, 1, EstadoRecurso.DISPONIBLE);
+        v1.setCapacidadPasajeros(8);  v1.setVelocidadKmH(70);
+        Recurso v2 = new Recurso("V-02", TipoRecurso.VEHICULO, 1, EstadoRecurso.DISPONIBLE);
+        v2.setCapacidadPasajeros(12); v2.setVelocidadKmH(65);
+        Recurso v3 = new Recurso("V-03", TipoRecurso.VEHICULO, 1, EstadoRecurso.DISPONIBLE);
+        v3.setCapacidadPasajeros(10); v3.setVelocidadKmH(75);
+        Recurso v4 = new Recurso("V-04", TipoRecurso.VEHICULO, 1, EstadoRecurso.DISPONIBLE);
+        v4.setCapacidadPasajeros(6);  v4.setVelocidadKmH(60);
+        Recurso v5 = new Recurso("V-05", TipoRecurso.VEHICULO, 1, EstadoRecurso.DISPONIBLE);
+        v5.setCapacidadPasajeros(15); v5.setVelocidadKmH(55);
+        s.agregarRecurso(v1);
+        s.agregarRecurso(v2);
+        s.agregarRecurso(v3);
+        s.agregarRecurso(v4);
+        s.agregarRecurso(v5);
 
 
         s.getGrafo().conectar(zCiudad, zHospital, 4.2, true, 10);
@@ -808,7 +1063,7 @@ public class SistemaGestionDesastres {
         s.agregarOperador(new OperadorEmergencia("Op2", "1234"));
         s.agregarAdmin(new Admin("Admin","1234"));
 
-        ArbolDistribuccion arbol = new ArbolDistribuccion();
+
 
         arbol.poblarDesdeZonas(s.getZonas());
 
@@ -847,8 +1102,8 @@ public class SistemaGestionDesastres {
         }
         return avances;
     }
-
-
-
-
+    public void addEquipoListener(EquipoListener l) { if (l != null) listeners.add(l); }
+    public void removeEquipoListener(EquipoListener l) { listeners.remove(l); }
+    public void setFactorAceleracion(double factor) { this.factorAceleracion = Math.max(0.1, factor); }
+    public double getFactorAceleracion() { return factorAceleracion; }
 }
