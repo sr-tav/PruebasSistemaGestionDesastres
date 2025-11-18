@@ -1,5 +1,6 @@
 package com.example.pruebassistemadesastres.viewController;
 
+import com.example.pruebassistemadesastres.App;
 import com.example.pruebassistemadesastres.model.*;
 import com.sothawo.mapjfx.*;
 import javafx.animation.Animation;
@@ -10,8 +11,10 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.chart.PieChart;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -19,6 +22,7 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Circle;
+import javafx.stage.Stage;
 import javafx.util.StringConverter;
 
 import java.text.Normalizer;
@@ -1423,7 +1427,26 @@ public class DashboardAdminViewController {
 
     @FXML
     void btnCerrarSesionAdmin(ActionEvent event) {
+        try {
 
+            Stage stageDashboard = (Stage) ((Button) event.getSource()).getScene().getWindow();
+            stageDashboard.close();
+
+            FXMLLoader loader = new FXMLLoader(App.class.getResource("/com/example/pruebassistemadesastres/fxml/loginv2.fxml"));
+            Scene scene = new Scene(loader.load(), 900, 600);
+
+            LoginViewController loginController = loader.getController();
+
+            loginController.setSistemaGestionDesastres(SistemaGestionDesastres.cargarDatosQuemados());
+
+            Stage stageLogin = new Stage();
+            stageLogin.setScene(scene);
+            stageLogin.setTitle("Iniciar Sesión");
+            stageLogin.show();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @FXML
@@ -1433,7 +1456,8 @@ public class DashboardAdminViewController {
 
     @FXML
     void btnMinimizarAdmin(ActionEvent event) {
-
+        Stage stage = (Stage) ((Button) event.getSource()).getScene().getWindow();
+        stage.setIconified(true);
     }
 
     @FXML
@@ -1443,7 +1467,9 @@ public class DashboardAdminViewController {
 
     @FXML
     void btnSalirAdmin(ActionEvent event) {
-
+        Stage stage = (Stage) ((Button) event.getSource()).getScene().getWindow();
+        stage.close();
+        Platform.exit();
     }
     /**
      * --------------------------------- GETTERS Y SETTERS -----------------------------------------------

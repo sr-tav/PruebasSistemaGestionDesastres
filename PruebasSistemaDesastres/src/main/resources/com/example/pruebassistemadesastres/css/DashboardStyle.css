@@ -94,3 +94,155 @@
     -fx-stroke: rgba(0,0,0,0.25);
     -fx-stroke-width: 0.5;
 }
+
+.combo_general {
+    -fx-background-color: #141587;
+    -fx-background-radius: 35;
+    -fx-border-radius: 35;
+    -fx-border-color: transparent;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-padding: 6 12;
+}
+
+/* Hover */
+.combo_general:hover {
+    -fx-background-color: #3c70c1;
+}
+
+/* Flecha */
+.combo_general .arrow-button {
+    -fx-background-color: transparent;
+}
+
+.combo_general .arrow-button:hover {
+    -fx-background-color: rgba(255,255,255,0.15);
+}
+
+.combo_general .arrow {
+    -fx-background-color: white;
+}
+
+/* Lista desplegable */
+.combo_general .list-view {
+    -fx-background-color: #141587;
+}
+
+.combo_general .list-cell {
+    -fx-background-color: #141587;
+    -fx-text-fill: white;
+}
+
+.combo_general .list-cell:hover {
+    -fx-background-color: #3c70c1;
+}
+
+
+.btn_mostrar_ruta {
+    -fx-background-color: #141587;
+    -fx-background-radius: 35;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-padding: 8 20;
+}
+
+.btn_mostrar_ruta:hover {
+    -fx-background-color: #3c70c1;
+    -fx-background-radius: 35;
+}
+
+.combo_general_delgado {
+    -fx-background-color: #141587;
+    -fx-background-radius: 20;
+    -fx-border-radius: 20;
+    -fx-border-color: transparent;
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-padding: 2 8;        /* MUCHÍSIMO más delgado */
+    -fx-min-height: 22px;    /* ALTURA REDUCIDA */
+}
+
+/* Hover */
+.combo_general_delgado:hover {
+    -fx-background-color: #3c70c1;
+}
+
+/* Flecha */
+.combo_general_delgado .arrow-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0 5;         /* Flecha más pequeña */
+}
+
+.combo_general_delgado .arrow {
+    -fx-background-color: white;
+}
+
+/* Lista desplegable */
+.combo_general_delgado .list-view {
+    -fx-background-color: #141587;
+}
+
+.combo_general_delgado .list-cell {
+    -fx-background-color: #141587;
+    -fx-text-fill: white;
+}
+
+.combo_general_delgado .list-cell:hover {
+    -fx-background-color: #3c70c1;
+}
+
+.table-view {
+    -fx-background-color: white;
+    -fx-border-color: #d0d7e2;
+    -fx-border-width: 1;
+    -fx-padding: 0;
+    -fx-table-cell-border-color: transparent;
+}
+
+
+/* ============================
+   ENCABEZADOS
+   ============================ */
+.table-view .column-header-background {
+    -fx-background-color: #1E88E5; /* Azul del proyecto */
+}
+
+.table-view .column-header,
+.table-view .column-header .label {
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER;
+    -fx-padding: 8 0 8 0;
+}
+
+
+/* ============================
+   CELDAS
+   ============================ */
+.table-row-cell {
+    -fx-background-color: white;
+}
+
+.table-row-cell:odd {
+    -fx-background-color: #f3f7fc;
+}
+
+.table-row-cell:hover {
+    -fx-background-color: #e1efff;
+}
+
+/* Selección */
+.table-row-cell:selected {
+    -fx-background-color: #bbdefb !important;
+}
+
+/* TEXTO INTERNO DE CELDAS — BLANCO COMO EL ENCABEZADO */
+.table-cell {
+    -fx-text-fill: white;  /* <<< AQUÍ SE CAMBIÓ */
+    -fx-font-size: 13px;
+}
+
+/* Asegurar color blanco también cuando está seleccionada */
+.table-row-cell:selected .table-cell {
+    -fx-text-fill: white !important;
+}

@@ -9,6 +9,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 import javax.swing.*;
 import java.io.IOException;
@@ -43,6 +44,8 @@ public class LoginViewController {
         DashboardAdminViewController controller = fxmlLoader.getController();
         controller.setSistemaGestionDesastres(SistemaGestionDesastres.getInstancia());
         Stage stage = new Stage();
+
+        stage.initStyle(StageStyle.UNDECORATED);
 
         Stage stageLogin = (Stage) btnIngresar.getScene().getWindow();
         stageLogin.close();

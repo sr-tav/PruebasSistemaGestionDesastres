@@ -7,7 +7,6 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
-<?import javafx.scene.control.TextField?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
@@ -20,9 +19,8 @@
 <?import javafx.scene.shape.Line?>
 <?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.text.Font?>
-<?import javafx.scene.text.Text?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="720.0" prefWidth="1250.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.pruebassistemadesastres.viewController.DashboardAdminViewController">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="720.0" prefWidth="1250.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.pruebassistemadesastres.viewController.DashboardAdminViewController">
    <children>
       <AnchorPane prefHeight="42.0" prefWidth="1250.0" style="-fx-background-color: #141587;" stylesheets="@../css/DashboardStyle.css">
          <children>
@@ -111,14 +109,17 @@
             </Button>
          </children>
       </AnchorPane>
-      <AnchorPane fx:id="PaneAdmin" layoutY="42.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="678.0" prefWidth="1250.0" style="-fx-background-color: #02032d; -fx-border-color: black;" visible="false">
+      <AnchorPane fx:id="PaneAdmin" layoutY="42.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="678.0" prefWidth="1250.0" style="-fx-background-color: #02032d; -fx-border-color: black;" stylesheets="@../css/DashboardStyle.css" visible="false">
          <children>
-            <TableView fx:id="tablaGestionInventario" layoutX="891.0" layoutY="104.0" prefHeight="422.0" prefWidth="330.0" style="-fx-background-color: #141587; -fx-border-color: white;">
+            <TableView fx:id="tablaGestionInventario" layoutX="891.0" layoutY="104.0" prefHeight="422.0" prefWidth="330.0" style="-fx-background-color: #141587; -fx-border-color: white;" stylesheets="@../css/DashboardStyle.css">
                <columns>
                   <TableColumn fx:id="columnaRecurso" prefWidth="75.0" style="-fx-background-color: #141587; -fx-border-color: white;" text="RECURSO" />
                   <TableColumn fx:id="columnaCantidad" prefWidth="75.0" style="-fx-background-color: #141587; -fx-border-color: white;" text="CANTIDAD" />
                   <TableColumn fx:id="columnaEstado" prefWidth="75.0" style="-fx-border-color: white; -fx-background-color: #141587;" styleClass=".fx.border.color" text="ESTADO" />
                </columns>
+               <columnResizePolicy>
+                  <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+               </columnResizePolicy>
             </TableView>
             <Button fx:id="asginarEquiposAdmin" layoutX="1073.0" layoutY="48.0" mnemonicParsing="false" onAction="#btnAsignarEquiposAdmin" prefHeight="40.0" prefWidth="40.0" styleClass="btn_subir_recurso_equipo" stylesheets="@../css/DashboardStyle.css">
                <textFill>
@@ -170,7 +171,7 @@
                   </ImageView>
                </graphic>
             </Button>
-            <Button fx:id="cerrarSesionAdmin" layoutX="34.0" layoutY="628.0" mnemonicParsing="false" onAction="#btnCerrarSesionAdmin" prefHeight="32.0" prefWidth="128.0" style="-fx-border-radius: 30; -fx-border-color: black; -fx-background-color: #141587; -fx-background-radius: 30; -fx-border-width: 2;" text="CERRRAR SESION">
+            <Button fx:id="cerrarSesionAdmin" layoutX="34.0" layoutY="628.0" mnemonicParsing="false" onAction="#btnCerrarSesionAdmin" prefHeight="32.0" prefWidth="128.0" style="-fx-border-radius: 30; -fx-border-color: black; -fx-background-color: #141587; -fx-background-radius: 30; -fx-border-width: 2;" text="CERRAR SESION">
                <textFill>
                   <RadialGradient centerX="0.5" centerY="0.5" radius="0.5">
                      <stops>
@@ -197,13 +198,13 @@
                   </ImageView>
                </graphic>
             </Button>
-            <ComboBox fx:id="comboSeleccionarEquipo" layoutX="890.0" layoutY="55.0" prefHeight="25.0" prefWidth="166.0" />
+            <ComboBox fx:id="comboSeleccionarEquipo" layoutX="891.0" layoutY="58.0" prefHeight="32.0" prefWidth="166.0" styleClass="combo_general_delgado" stylesheets="@../css/DashboardStyle.css" />
             <Button fx:id="btnEnviarEquipo" layoutX="1112.0" layoutY="568.0" mnemonicParsing="false" onAction="#clickEnviarEquipo" prefHeight="30.0" prefWidth="100.0" styleClass="btn_minimizar" stylesheets="@../css/DashboardStyle.css" text="Enviar Equipo" textFill="WHITE">
                <font>
                   <Font name="System Bold" size="12.0" />
                </font>
             </Button>
-            <ComboBox fx:id="comboSalidaRecursos" layoutX="904.0" layoutY="571.0" prefHeight="25.0" prefWidth="190.0" />
+            <ComboBox fx:id="comboSalidaRecursos" layoutX="904.0" layoutY="571.0" prefHeight="36.0" prefWidth="190.0" styleClass="combo_general_delgado" stylesheets="@../css/DashboardStyle.css" />
             <Label layoutX="904.0" layoutY="544.0" opacity="0.66" text="Seleccionar salida de los recursos" textFill="WHITE">
                <font>
                   <Font name="System Italic" size="12.0" />
@@ -245,60 +246,10 @@
                   </RadialGradient>
                </textFill>
             </Button>
-            <TextField alignment="TOP_CENTER" layoutX="909.0" layoutY="53.0" prefHeight="27.0" prefWidth="296.0" style="-fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-radius: 30;" text="PLANIFICADOR DE RUTAS" />
-            <Button fx:id="actualizarRutas" layoutX="909.0" layoutY="322.0" mnemonicParsing="false" onAction="#btnActualizarRutas" prefHeight="32.0" prefWidth="128.0" style="-fx-border-radius: 30; -fx-border-color: black; -fx-background-color: #141587; -fx-background-radius: 30; -fx-border-width: 2;" text="ACTUALIZAR RUTAS">
-               <textFill>
-                  <RadialGradient centerX="0.5" centerY="0.5" radius="0.5">
-                     <stops>
-                        <Stop>
-                           <color>
-                              <Color red="1.0" green="1.0" blue="1.0" />
-                           </color>
-                        </Stop>
-                        <Stop offset="1.0">
-                           <color>
-                              <Color red="1.0" green="1.0" blue="1.0" />
-                           </color>
-                        </Stop>
-                     </stops>
-                  </RadialGradient>
-               </textFill>
-            </Button>
-            <Button fx:id="agregarRuta" layoutX="1096.0" layoutY="322.0" mnemonicParsing="false" onAction="#btnAgregarRuta" prefHeight="32.0" prefWidth="128.0" style="-fx-border-radius: 30; -fx-border-color: black; -fx-background-color: #141587; -fx-background-radius: 30; -fx-border-width: 2;" text="AGREGAR RUTA">
-               <textFill>
-                  <RadialGradient centerX="0.5" centerY="0.5" radius="0.5">
-                     <stops>
-                        <Stop>
-                           <color>
-                              <Color red="1.0" green="1.0" blue="1.0" />
-                           </color>
-                        </Stop>
-                        <Stop offset="1.0">
-                           <color>
-                              <Color red="1.0" green="1.0" blue="1.0" />
-                           </color>
-                        </Stop>
-                     </stops>
-                  </RadialGradient>
-               </textFill>
-            </Button>
-            <ComboBox fx:id="comboMunicipio" layoutX="909.0" layoutY="383.0" prefHeight="16.0" prefWidth="128.0" promptText="Municipio" />
-            <ComboBox fx:id="comboZonaInicio" layoutX="909.0" layoutY="440.0" prefHeight="16.0" prefWidth="128.0" promptText="Inicio" />
-            <ComboBox fx:id="comboZonaFinal" layoutX="909.0" layoutY="497.0" prefHeight="16.0" prefWidth="128.0" promptText="Final" />
-            <Button fx:id="btnMostrarRuta" layoutX="1119.0" layoutY="440.0" mnemonicParsing="false" onAction="#btnMostrarRutaAction" text="Mostrar ruta" />
-            <AnchorPane layoutX="887.0" layoutY="112.0" prefHeight="179.0" prefWidth="346.0" style="-fx-background-color: #141587; -fx-border-radius: 30; -fx-background-radius: 30;">
-               <children>
-                  <TextField layoutX="20.0" layoutY="39.0" prefHeight="27.0" prefWidth="128.0" style="-fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-radius: 30;" />
-                  <TextField layoutX="21.0" layoutY="79.0" prefHeight="27.0" prefWidth="128.0" style="-fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-radius: 30;" />
-                  <TextField layoutX="21.0" layoutY="122.0" prefHeight="27.0" prefWidth="128.0" style="-fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-radius: 30;" />
-                  <Text fill="WHITE" layoutX="58.0" layoutY="57.0" strokeType="OUTSIDE" strokeWidth="0.0" text="EQUIPO 1" />
-                  <Text fill="WHITE" layoutX="58.0" layoutY="97.0" strokeType="OUTSIDE" strokeWidth="0.0" text="EQUIPO 2" />
-                  <Text fill="WHITE" layoutX="62.0" layoutY="140.0" strokeType="OUTSIDE" strokeWidth="0.0" text="EQUIPO 3" />
-                  <TextField layoutX="197.0" layoutY="39.0" prefHeight="27.0" prefWidth="112.0" style="-fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-radius: 30;" />
-                  <TextField layoutX="197.0" layoutY="79.0" prefHeight="27.0" prefWidth="112.0" style="-fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-radius: 30;" />
-                  <TextField layoutX="197.0" layoutY="122.0" prefHeight="27.0" prefWidth="112.0" style="-fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-radius: 30;" />
-               </children>
-            </AnchorPane>
+            <ComboBox fx:id="comboMunicipio" layoutX="962.0" layoutY="161.0" prefHeight="44.0" prefWidth="171.0" promptText="MUNICIPIO" styleClass="combo_general" stylesheets="@../css/DashboardStyle.css" />
+            <ComboBox fx:id="comboZonaInicio" layoutX="962.0" layoutY="238.0" prefHeight="44.0" prefWidth="171.0" promptText="INICIO" styleClass="combo_general" stylesheets="@../css/DashboardStyle.css" />
+            <ComboBox fx:id="comboZonaFinal" layoutX="962.0" layoutY="317.0" prefHeight="44.0" prefWidth="171.0" promptText="FINAL" styleClass="combo_general" stylesheets="@../css/DashboardStyle.css" />
+            <Button fx:id="btnMostrarRuta" layoutX="996.0" layoutY="466.0" mnemonicParsing="false" onAction="#btnMostrarRutaAction" styleClass="btn_mostrar_ruta" stylesheets="@../css/DashboardStyle.css" text="MOSTRAR" />
          </children>
       </AnchorPane>
       <AnchorPane fx:id="paneMapa" layoutX="-2.0" layoutY="115.0" AnchorPane.bottomAnchor="69.0" AnchorPane.leftAnchor="-2.0" AnchorPane.rightAnchor="-2.0" AnchorPane.topAnchor="115.0">
