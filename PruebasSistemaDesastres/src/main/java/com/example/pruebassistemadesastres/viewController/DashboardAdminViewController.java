@@ -80,6 +80,7 @@ public class DashboardAdminViewController {
         modoAmplio();
         crearOverlayLeyenda();
         crearHudMulti();
+        Platform.runLater(this::sizeChartsOnce);
     }
 
     private void crearOverlayLeyenda() {
@@ -369,8 +370,9 @@ public class DashboardAdminViewController {
         refrescarComboSalidaPorDesastre();
         conectarDesastreConTodasLasZonasMunicipio();
         detenerTodosLosEnvios();
-        crearHudDesastre();
         actualizarHudDesastre();
+        iniciarCronometroDesastre();
+        actualizarPanelEstadisticas();
     }
     /**
      *
@@ -533,15 +535,14 @@ public class DashboardAdminViewController {
                     .filter(rr -> rr.getTipo() == t && rr.getEstado() == EstadoRecurso.DISPONIBLE && rr.getCantidad() > 0)
                     .findFirst().orElse(null);
             if (r != null) {
-                r.setCantidad(r.getCantidad() - 1);
+                restarStock(r, 1);
                 if (r.getCantidad() == 0) r.setEstado(EstadoRecurso.ASIGNADO);
                 carga.add(new Recurso("ENV-" + r.getIdRecurso(), r.getTipo(), 1, EstadoRecurso.EN_RUTA));
             }
         }
 
         // Reservar vehículo
-        vehiculoSeleccionado.setCantidad(vehiculoSeleccionado.getCantidad() - 1);
-        if (vehiculoSeleccionado.getCantidad() == 0) vehiculoSeleccionado.setEstado(EstadoRecurso.ASIGNADO);
+        restarStock(vehiculoSeleccionado, 1);
         Recurso vehiculoParaViajar =
                 new Recurso("ENV-" + vehiculoSeleccionado.getIdRecurso(), TipoRecurso.VEHICULO, 1, EstadoRecurso.EN_RUTA);
 
@@ -659,6 +660,16 @@ public class DashboardAdminViewController {
      * ---------------------------------------VENTANA DE ESTADISTICAS--------------------------------------
      */
     @FXML private Button btnEstadisticas;
+    @FXML private PieChart graficoAvanceRecursos;
+    @FXML private PieChart graficoRecursosDistribuidos;
+    @FXML private Label labelHabitantesEvacuados;
+    @FXML private Label labelHabitantesPeligro;
+    @FXML private Label labelHabitantesPendientes;
+    @FXML private Label labelRecursosDisponibles;
+    @FXML private Label labelTiempoDesastre;
+    private Timeline cronometro;
+    private long tInicioDesastreMs = 0L;
+    private boolean chartsSizedOnce = false;
     /**
      *
      * @param event
@@ -666,11 +677,139 @@ public class DashboardAdminViewController {
     @FXML
     void clickEstadisticas(ActionEvent event) {
         modoCompacto();
+        Platform.runLater(this::sizeChartsOnce);
         PaneInicio.setVisible(false);
         PaneRutas.setVisible(false);
         PaneEstads.setVisible(true);
         PaneAdmin.setVisible(false);
         paneMapa.toBack();
+    }
+
+    private void sizeChartsOnce() {
+        if (chartsSizedOnce) return;
+        chartsSizedOnce = true;
+
+        // Quita cualquier bind previo para evitar el bucle de layout
+        graficoAvanceRecursos.prefWidthProperty().unbind();
+        graficoAvanceRecursos.prefHeightProperty().unbind();
+        graficoRecursosDistribuidos.prefWidthProperty().unbind();
+        graficoRecursosDistribuidos.prefHeightProperty().unbind();
+
+        // Fijar contenedores y anclar
+        fijarContenedorChart(graficoAvanceRecursos, 360);       // ajusta 360 al alto que quieras
+        fijarContenedorChart(graficoRecursosDistribuidos, 360);
+
+        // Opcional: si esos "cards" están dentro de un VBox
+        VBox.setVgrow((Region) graficoAvanceRecursos.getParent(), Priority.ALWAYS);
+        VBox.setVgrow((Region) graficoRecursosDistribuidos.getParent(), Priority.ALWAYS);
+
+        // Opcional: que el pie quede centrado
+        graficoAvanceRecursos.setClockwise(true);
+        graficoAvanceRecursos.setStartAngle(90);
+        graficoRecursosDistribuidos.setClockwise(true);
+        graficoRecursosDistribuidos.setStartAngle(90);
+    }
+
+    private void actualizarPanelEstadisticas() {
+        Zona dz = (sistemaGestionDesastres != null) ? sistemaGestionDesastres.getDesastreActivo() : null;
+
+        int tot = (dz != null) ? dz.getHabitantes() : 0;
+        int eva = (dz != null) ? dz.getPersonasEvacuadas() : 0;
+        int pen = Math.max(0, tot - eva);
+
+        // Labels
+        labelHabitantesPeligro.setText(String.valueOf(tot));
+        labelHabitantesEvacuados.setText(String.valueOf(eva));
+        labelHabitantesPendientes.setText(String.valueOf(pen));
+
+        // Recursos disponibles
+        labelRecursosDisponibles.setText(String.valueOf(contarRecursosDisponibles()));
+
+        // Gráfico 1: Avance de evacuación (Evacuadas vs Pendientes)
+        ObservableList<PieChart.Data> avance = FXCollections.observableArrayList(
+                new PieChart.Data("Evacuadas", eva),
+                new PieChart.Data("Pendientes", pen)
+        );
+        graficoAvanceRecursos.setTitle("Avance de evacuación");
+        graficoAvanceRecursos.setData(avance);
+        graficoAvanceRecursos.setLabelsVisible(true);
+        graficoAvanceRecursos.setLegendVisible(true);
+
+        // Gráfico 2: Uso de recursos (por tipo: “Usados” vs “Disponibles”)
+        actualizarGraficoUsoRecursos();
+    }
+    private int contarRecursosDisponibles() {
+        try {
+            ArbolDistribuccion arbol = (sistemaGestionDesastres != null) ? sistemaGestionDesastres.getArbolDistribuccion() : null;
+            if (arbol != null) {
+                List<Recurso> todos = arbol.obtenerTodosLosRecursosDetalle();
+                return (int) todos.stream()
+                        .filter(r -> r.getEstado() == EstadoRecurso.DISPONIBLE)
+                        .mapToInt(Recurso::getCantidad)
+                        .filter(q -> q > 0)
+                        .sum();
+            }
+        } catch (Exception ignored) {}
+
+        // Fallback
+        if (sistemaGestionDesastres == null || sistemaGestionDesastres.getRecursos() == null) return 0;
+        return sistemaGestionDesastres.getRecursos().stream()
+                .filter(r -> r.getEstado() == EstadoRecurso.DISPONIBLE)
+                .mapToInt(Recurso::getCantidad)
+                .filter(q -> q > 0)
+                .sum();
+    }
+    private void actualizarGraficoUsoRecursos() {
+        List<Recurso> base;
+        ArbolDistribuccion arbol = (sistemaGestionDesastres != null) ? sistemaGestionDesastres.getArbolDistribuccion() : null;
+        if (arbol != null) base = arbol.obtenerTodosLosRecursosDetalle();
+        else base = (sistemaGestionDesastres != null && sistemaGestionDesastres.getRecursos()!=null)
+                ? sistemaGestionDesastres.getRecursos() : List.of();
+
+        Map<TipoRecurso, int[]> mapa = new EnumMap<>(TipoRecurso.class);
+        for (Recurso r : base) {
+            if (r.getCantidad() <= 0) continue;
+            mapa.putIfAbsent(r.getTipo(), new int[]{0,0}); // [0]=disp, [1]=usados
+            if (r.getEstado() == EstadoRecurso.DISPONIBLE) mapa.get(r.getTipo())[0] += r.getCantidad();
+            else                                           mapa.get(r.getTipo())[1] += r.getCantidad();
+        }
+
+        // Construimos “torta” con la suma total de “usados” por tipo (para no saturar)
+        ObservableList<PieChart.Data> datos = FXCollections.observableArrayList();
+        for (Map.Entry<TipoRecurso, int[]> e : mapa.entrySet()) {
+            int usados = e.getValue()[1];
+            if (usados > 0)
+                datos.add(new PieChart.Data(e.getKey().name() + " usados", usados));
+        }
+        if (datos.isEmpty()) datos.add(new PieChart.Data("Sin uso", 1));
+
+        graficoRecursosDistribuidos.setTitle("Uso de recursos");
+        graficoRecursosDistribuidos.setData(datos);
+        graficoRecursosDistribuidos.setLabelsVisible(true);
+        graficoRecursosDistribuidos.setLegendVisible(true);
+    }
+    private void iniciarCronometroDesastre() {
+        detenerCronometroDesastre();
+        tInicioDesastreMs = System.currentTimeMillis();
+        cronometro = new Timeline(new KeyFrame(javafx.util.Duration.seconds(1), e -> {
+            long trans = System.currentTimeMillis() - tInicioDesastreMs;
+            labelTiempoDesastre.setText(formatoDuracion(trans));
+        }));
+        cronometro.setCycleCount(Animation.INDEFINITE);
+        cronometro.play();
+        labelTiempoDesastre.setText("00:00:00");
+    }
+    private void detenerCronometroDesastre() {
+        if (cronometro != null) { cronometro.stop(); cronometro = null; }
+        tInicioDesastreMs = 0L;
+        labelTiempoDesastre.setText("0");
+    }
+    private String formatoDuracion(long ms) {
+        long s = ms / 1000;
+        long hh = s / 3600;
+        long mm = (s % 3600) / 60;
+        long ss = s % 60;
+        return String.format("%02d:%02d:%02d", hh, mm, ss);
     }
     /**
      * --------------------------------------- GENERALES --------------------------------------
@@ -683,8 +822,6 @@ public class DashboardAdminViewController {
     @FXML private Button asginarEquiposAdmin;
     @FXML private Button cerrarSesionAdmin;
     @FXML private Button equiposAdmin;
-    @FXML private PieChart graficoAvanceRecursos;
-    @FXML private PieChart graficoRecursosDistribuidos;
     @FXML private Button minimizarAdmin;
     @FXML private Button recursosInicio;
     @FXML private Button salirAdmin;
@@ -826,10 +963,12 @@ public class DashboardAdminViewController {
         List<Recurso> recursos = arbol.obtenerTodosLosRecursosDetalle();
 
         for (Recurso r : recursos) {
+            int cant = Math.max(0, r.getCantidad()); // clamp visual
+            if (cant <= 0) continue;                 // ¡oculta en 0!
             tablaGestionInventario.getItems().add(
                     new RecursoInventarioView(
                             r.getTipo().name(),
-                            r.getCantidad(),
+                            cant,
                             r.getEstado().name()
                     )
             );
@@ -987,6 +1126,7 @@ public class DashboardAdminViewController {
 
         legendBox.setVisible(!legendBox.getChildren().isEmpty());
         legendBox.toFront();
+        actualizarPanelEstadisticas();
     }
 
     /**
@@ -1383,35 +1523,59 @@ public class DashboardAdminViewController {
     }
     private void actualizarHudDesastre() {
         Zona dz = (sistemaGestionDesastres != null) ? sistemaGestionDesastres.getDesastreActivo() : null;
-        if (dz == null || hudDesastre == null) return;
+        if (dz == null) return;
 
         int tot = dz.getHabitantes(); // o getPersonasTotales()
         int eva = dz.getPersonasEvacuadas();
         int pen = Math.max(0, tot - eva);
 
-        lblTotales.setText("Total: " + tot);
-        lblEvacuadas.setText("Evacuadas: " + eva);
-        lblPendientes.setText("Pendientes: " + pen);
-    }
-    private void crearHudDesastre() {
-        if (hudDesastre != null) return;
-        lblDesastreTitulo = new Label("Desastre activo");
-        lblDesastreTitulo.setStyle("-fx-text-fill: white; -fx-font-weight: 700; -fx-font-size: 13px;");
-        lblTotales   = new Label();
-        lblEvacuadas = new Label();
-        lblPendientes= new Label();
-        for (Label l : List.of(lblTotales, lblEvacuadas, lblPendientes)) {
-            l.setStyle("-fx-text-fill: white; -fx-font-size: 12px;");
+        if (hudDesastre != null) {
+            lblTotales.setText("Total: " + tot);
+            lblEvacuadas.setText("Evacuadas: " + eva);
+            lblPendientes.setText("Pendientes: " + pen);
         }
-        hudDesastre = new VBox(4, lblDesastreTitulo, lblTotales, lblEvacuadas, lblPendientes);
-        hudDesastre.setPadding(new Insets(10));
-        hudDesastre.setBackground(new Background(new BackgroundFill(
-                Color.rgb(20,20,30,0.85), new CornerRadii(10), Insets.EMPTY)));
-        paneMapa.getChildren().add(hudDesastre);
-        AnchorPane.setTopAnchor(hudDesastre, 16.0);
-        AnchorPane.setLeftAnchor(hudDesastre, 16.0);
-    }
 
+        actualizarPanelEstadisticas();
+
+        // 🔔 Fin automático del desastre
+        if (tot <= 0 || pen <= 0) {
+            finalizarDesastre();
+        }
+    }
+    private void finalizarDesastre() {
+        detenerCronometroDesastre();
+        detenerTodosLosEnvios();
+        limpiarOverlaysDesastre();
+        lineasPorEnvio.values().forEach(cl -> mapView.removeCoordinateLine(cl));
+        lineasPorEnvio.clear();
+
+        // Limpia marcador y estado del modelo
+        markerDesastre = null;
+        cCritico = cModerado = cEstable = null;
+
+        try {
+            if (sistemaGestionDesastres != null) {
+                // Si tu modelo tiene un método dedicado, úsalo:
+                // sistemaGestionDesastres.finalizarSimulacro();
+                // De lo contrario, al menos deja el activo en null si aplica.
+            }
+        } catch (Exception ignored) {}
+
+        desastreActivo = null;
+
+        // Reset UI de estadísticas
+        labelHabitantesPeligro.setText("0");
+        labelHabitantesEvacuados.setText("0");
+        labelHabitantesPendientes.setText("0");
+        labelRecursosDisponibles.setText("0");
+        graficoAvanceRecursos.setData(FXCollections.emptyObservableList());
+        graficoRecursosDistribuidos.setData(FXCollections.emptyObservableList());
+
+        // Refresca combos (por si filtraban por municipio del desastre)
+        refrescarComboSalidaPorDesastre();
+
+        mostrarInfo("Desastre finalizado.");
+    }
     private EnvioAnim crearHudFilaEnvio(String envioId, double velocidadKmH, double distanciaKm) {
         if (hudLista == null) crearHudMulti();
 
@@ -1510,5 +1674,26 @@ public class DashboardAdminViewController {
         tl.setCycleCount(Animation.INDEFINITE);
         tl.play();
         ea.timeline = tl;
+    }
+    private void restarStock(Recurso r, int n) {
+        int nueva = Math.max(0, r.getCantidad() - Math.max(0, n));
+        r.setCantidad(nueva);
+        if (nueva == 0 && r.getEstado() == EstadoRecurso.DISPONIBLE) {
+            r.setEstado(EstadoRecurso.ASIGNADO); // o el estado que uses para “sin stock”
+        }
+    }
+    private void fijarContenedorChart(PieChart chart, double altoPx) {
+        Region parent = (Region) chart.getParent();
+        // Altura estabilizada del “card”
+        parent.setMinHeight(altoPx);
+        parent.setPrefHeight(altoPx);
+        parent.setMaxHeight(Region.USE_PREF_SIZE); // no crece más
+        // El chart solo se ancla, sin binds de pref*
+        AnchorPane.setTopAnchor(chart, 16.0);
+        AnchorPane.setBottomAnchor(chart, 16.0);
+        AnchorPane.setLeftAnchor(chart, 16.0);
+        AnchorPane.setRightAnchor(chart, 16.0);
+        chart.setMinSize(Region.USE_COMPUTED_SIZE, Region.USE_COMPUTED_SIZE);
+        chart.setMaxSize(Region.USE_COMPUTED_SIZE, Region.USE_COMPUTED_SIZE);
     }
 }

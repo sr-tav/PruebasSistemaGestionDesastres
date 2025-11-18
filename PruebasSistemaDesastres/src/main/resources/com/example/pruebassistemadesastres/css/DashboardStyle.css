@@ -52,3 +52,45 @@
     -fx-background-color: #308022;
     -fx-background-radius: 35;
 }
+.rounded-rect {
+    -fx-arc-width: 20;
+    -fx-arc-height: 20;
+}
+.btn_barra_seleccion{
+    -fx-background-color: #3233c6;
+    -fx-background-radius: 0;
+}
+.btn_barra_seleccion:hover{
+     -fx-background-color: #141587;
+     -fx-background-radius: 0;
+ }
+.chart,
+.chart-content,
+.chart-plot-background {
+    -fx-background-color: transparent;
+}
+
+/* Títulos de los charts */
+.chart-title {
+    -fx-text-fill: white;
+}
+
+/* Leyenda y sus etiquetas */
+.chart-legend {
+    -fx-background-color: transparent;
+}
+.chart-legend-item,
+.chart-legend-item .label {
+    -fx-text-fill: white;
+}
+
+/* Etiquetas de sectores del PieChart */
+.chart-pie-label {
+    -fx-fill: white;       /* OJO: en pie labels se usa -fx-fill */
+}
+
+/* (Opcional) Trazo blanco suave en labels por si hay fondos claros */
+.chart-pie-label {
+    -fx-stroke: rgba(0,0,0,0.25);
+    -fx-stroke-width: 0.5;
+}

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.chart.PieChart?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
@@ -10,19 +11,22 @@
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.paint.Color?>
 <?import javafx.scene.paint.RadialGradient?>
 <?import javafx.scene.paint.Stop?>
+<?import javafx.scene.shape.Line?>
+<?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="720.0" prefWidth="1250.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.pruebassistemadesastres.viewController.DashboardAdminViewController">
    <children>
-      <AnchorPane prefHeight="42.0" prefWidth="1250.0" style="-fx-background-color: #141587;">
+      <AnchorPane prefHeight="42.0" prefWidth="1250.0" style="-fx-background-color: #141587;" stylesheets="@../css/DashboardStyle.css">
          <children>
-            <Button fx:id="btnInicio" layoutX="17.0" layoutY="6.0" mnemonicParsing="false" onAction="#clickInicio" prefHeight="26.0" prefWidth="79.0" style="-fx-border-radius: 30; -fx-border-color: black; -fx-background-color: #141587; -fx-background-radius: 30; -fx-border-width: 2;" text="INICIO">
+            <Button fx:id="btnInicio" layoutX="-1.0" layoutY="-2.0" mnemonicParsing="false" onAction="#clickInicio" prefHeight="40.0" prefWidth="97.0" styleClass="btn_barra_seleccion" text="INICIO">
                <textFill>
                   <RadialGradient centerX="0.5" centerY="0.5" radius="0.5">
                      <stops>
@@ -39,10 +43,13 @@
                      </stops>
                   </RadialGradient>
                </textFill>
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font>
             </Button>
-            <Button fx:id="btnAdmin" layoutX="102.0" layoutY="6.0" mnemonicParsing="false" onAction="#clickAdmin" prefHeight="26.0" prefWidth="79.0" style="-fx-border-radius: 30; -fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-width: 2;" text="ADMIN" textFill="WHITE" />
-            <Button fx:id="btnRutas" layoutX="189.0" layoutY="6.0" mnemonicParsing="false" onAction="#clickRutas" prefHeight="26.0" prefWidth="79.0" style="-fx-border-radius: 30; -fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-width: 2;" text="RUTAS" textFill="WHITE" />
-            <Button fx:id="btnEstadisticas" layoutX="277.0" layoutY="6.0" mnemonicParsing="false" onAction="#clickEstadisticas" prefHeight="30.0" prefWidth="104.0" style="-fx-border-radius: 30; -fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-width: 2;" text="ESTADISTICAS">
+            <Button fx:id="btnAdmin" layoutX="93.0" layoutY="-2.0" mnemonicParsing="false" onAction="#clickAdmin" prefHeight="40.0" prefWidth="97.0" styleClass="btn_barra_seleccion" text="ADMIN" textFill="WHITE" />
+            <Button fx:id="btnRutas" layoutX="188.0" layoutY="-3.0" mnemonicParsing="false" onAction="#clickRutas" prefHeight="40.0" prefWidth="110.0" styleClass="btn_barra_seleccion" text="RUTAS" textFill="WHITE" />
+            <Button fx:id="btnEstadisticas" layoutX="295.0" layoutY="-4.0" mnemonicParsing="false" onAction="#clickEstadisticas" prefHeight="42.0" prefWidth="112.0" styleClass="btn_barra_seleccion" text="ESTADISTICAS">
                <textFill>
                   <RadialGradient centerX="0.5" centerY="0.5" radius="0.5">
                      <stops>
@@ -77,6 +84,9 @@
                      </stops>
                   </RadialGradient>
                </textFill>
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font>
             </Button>
             <Button fx:id="minimizarAdmin" layoutX="1149.0" layoutY="-6.0" mnemonicParsing="false" onAction="#btnMinimizarAdmin" prefHeight="48.0" prefWidth="52.0" styleClass="btn_minimizar" stylesheets="@../css/DashboardStyle.css" text="-">
                <textFill>
@@ -95,6 +105,9 @@
                      </stops>
                   </RadialGradient>
                </textFill>
+               <font>
+                  <Font size="22.0" />
+               </font>
             </Button>
          </children>
       </AnchorPane>
@@ -288,104 +301,6 @@
             </AnchorPane>
          </children>
       </AnchorPane>
-      <AnchorPane fx:id="PaneEstads" layoutX="-2.0" layoutY="38.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="678.0" prefWidth="1257.0" style="-fx-background-color: #02032d; -fx-border-color: black;" visible="false">
-         <children>
-            <TextField layoutX="872.0" layoutY="72.0" prefHeight="27.0" prefWidth="296.0" style="-fx-background-color: #141587; -fx-border-color: black; -fx-background-radius: 30; -fx-border-radius: 30;" />
-            <Text fill="WHITE" layoutX="955.0" layoutY="91.0" strokeType="OUTSIDE" strokeWidth="0.0" text="AVANCE DE EVACUACIONES" textAlignment="JUSTIFY" />
-            <Button fx:id="ActualizarRecursosDistribuidos" layoutX="79.0" layoutY="560.0" mnemonicParsing="false" onAction="#btnActualizarRecursosDistribuidos" prefHeight="32.0" prefWidth="128.0" style="-fx-border-radius: 30; -fx-border-color: black; -fx-background-color: #141587; -fx-background-radius: 30; -fx-border-width: 2;" text="Actualizar">
-               <textFill>
-                  <RadialGradient centerX="0.5" centerY="0.5" radius="0.5">
-                     <stops>
-                        <Stop>
-                           <color>
-                              <Color red="1.0" green="1.0" blue="1.0" />
-                           </color>
-                        </Stop>
-                        <Stop offset="1.0">
-                           <color>
-                              <Color red="1.0" green="1.0" blue="1.0" />
-                           </color>
-                        </Stop>
-                     </stops>
-                  </RadialGradient>
-               </textFill>
-            </Button>
-            <Button layoutX="120.0" layoutY="87.0" mnemonicParsing="false" prefHeight="32.0" prefWidth="278.0" style="-fx-border-radius: 30; -fx-border-color: black; -fx-background-color: #141587; -fx-background-radius: 30; -fx-border-width: 2;" text="RECURSOS DISTRIBUIDOS">
-               <textFill>
-                  <RadialGradient centerX="0.5" centerY="0.5" radius="0.5">
-                     <stops>
-                        <Stop>
-                           <color>
-                              <Color red="1.0" green="1.0" blue="1.0" />
-                           </color>
-                        </Stop>
-                        <Stop offset="1.0">
-                           <color>
-                              <Color red="1.0" green="1.0" blue="1.0" />
-                           </color>
-                        </Stop>
-                     </stops>
-                  </RadialGradient>
-               </textFill>
-            </Button>
-            <Button layoutX="276.0" layoutY="560.0" mnemonicParsing="false" prefHeight="32.0" prefWidth="128.0" style="-fx-border-radius: 30; -fx-border-color: black; -fx-background-color: #141587; -fx-background-radius: 30; -fx-border-width: 2;" text="ACTUALIZAR RUTAS">
-               <textFill>
-                  <RadialGradient centerX="0.5" centerY="0.5" radius="0.5">
-                     <stops>
-                        <Stop>
-                           <color>
-                              <Color red="1.0" green="1.0" blue="1.0" />
-                           </color>
-                        </Stop>
-                        <Stop offset="1.0">
-                           <color>
-                              <Color red="1.0" green="1.0" blue="1.0" />
-                           </color>
-                        </Stop>
-                     </stops>
-                  </RadialGradient>
-               </textFill>
-            </Button>
-            <Button layoutX="860.0" layoutY="544.0" mnemonicParsing="false" prefHeight="32.0" prefWidth="128.0" style="-fx-border-radius: 30; -fx-border-color: black; -fx-background-color: #141587; -fx-background-radius: 30; -fx-border-width: 2;" text="AGREGAR RUTA">
-               <textFill>
-                  <RadialGradient centerX="0.5" centerY="0.5" radius="0.5">
-                     <stops>
-                        <Stop>
-                           <color>
-                              <Color red="1.0" green="1.0" blue="1.0" />
-                           </color>
-                        </Stop>
-                        <Stop offset="1.0">
-                           <color>
-                              <Color red="1.0" green="1.0" blue="1.0" />
-                           </color>
-                        </Stop>
-                     </stops>
-                  </RadialGradient>
-               </textFill>
-            </Button>
-            <PieChart fx:id="graficoRecursosDistribuidos" layoutX="64.0" layoutY="142.0" prefHeight="400.0" prefWidth="382.0" style="-fx-background-color: white;" />
-            <PieChart fx:id="graficoAvanceRecursos" layoutX="834.0" layoutY="131.0" prefHeight="400.0" prefWidth="371.0" style="-fx-background-color: white;" />
-            <Button fx:id="actualizarAvanceEvacuaciones" layoutX="1043.0" layoutY="544.0" mnemonicParsing="false" onAction="#btnActualizarAvanceEvacuaciones" prefHeight="32.0" prefWidth="128.0" style="-fx-border-radius: 30; -fx-border-color: black; -fx-background-color: #141587; -fx-background-radius: 30; -fx-border-width: 2;" text="Actualizar">
-               <textFill>
-                  <RadialGradient centerX="0.5" centerY="0.5" radius="0.5">
-                     <stops>
-                        <Stop>
-                           <color>
-                              <Color red="1.0" green="1.0" blue="1.0" />
-                           </color>
-                        </Stop>
-                        <Stop offset="1.0">
-                           <color>
-                              <Color red="1.0" green="1.0" blue="1.0" />
-                           </color>
-                        </Stop>
-                     </stops>
-                  </RadialGradient>
-               </textFill>
-            </Button>
-         </children>
-      </AnchorPane>
       <AnchorPane fx:id="paneMapa" layoutX="-2.0" layoutY="115.0" AnchorPane.bottomAnchor="69.0" AnchorPane.leftAnchor="-2.0" AnchorPane.rightAnchor="-2.0" AnchorPane.topAnchor="115.0">
          <children>
             <Button fx:id="btnIzq" layoutX="16.0" layoutY="225.0" mnemonicParsing="false" onAction="#clickIzq" prefHeight="45.0" prefWidth="53.0" styleClass="btn_SelectorMunicipio" stylesheets="@../css/DashboardStyle.css">
@@ -408,6 +323,107 @@
             </Button>
             <VBox fx:id="legendBox" prefHeight="200.0" prefWidth="100.0" />
             <StackPane fx:id="overlay" prefHeight="150.0" prefWidth="200.0" />
+         </children>
+      </AnchorPane>
+      <AnchorPane fx:id="PaneEstads" layoutX="-2.0" layoutY="38.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="684.0" prefWidth="1257.0" style="-fx-background-color: #02032d; -fx-border-color: black;" visible="false">
+         <children>
+            <Pane layoutX="225.0" layoutY="162.0">
+               <children>
+                  <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#425b9a" height="422.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="395.0" />
+                  <Label layoutX="94.0" layoutY="41.0" prefHeight="21.0" prefWidth="252.0" text="Avance de evacuacion" textFill="WHITE">
+                     <font>
+                        <Font name="System Bold" size="17.0" />
+                     </font>
+                  </Label>
+                  <ImageView fitHeight="48.0" fitWidth="52.0" layoutX="33.0" layoutY="30.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../imagenes/salida.png" />
+                     </image>
+                  </ImageView>
+                  <Line endX="140.0" endY="-9.0" layoutX="208.0" layoutY="77.0" startX="-116.0" startY="-9.0" stroke="WHITE" strokeWidth="2.0" />
+                  <PieChart fx:id="graficoAvanceRecursos" layoutX="33.0" layoutY="93.0" prefHeight="298.0" prefWidth="336.0" stylesheets="@../css/DashboardStyle.css" />
+               </children>
+            </Pane>
+            <Pane layoutX="638.0" layoutY="163.0">
+               <children>
+                  <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#425b9a" height="422.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="395.0" />
+                  <Label layoutX="84.0" layoutY="35.0" prefHeight="21.0" prefWidth="287.0" text="Uso de recursos" textFill="WHITE">
+                     <font>
+                        <Font name="System Bold" size="17.0" />
+                     </font>
+                  </Label>
+                  <ImageView fitHeight="48.0" fitWidth="52.0" layoutX="29.0" layoutY="27.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../imagenes/recursos-humanos.png" />
+                     </image>
+                  </ImageView>
+                  <Line endX="161.0" endY="-9.0" layoutX="198.0" layoutY="72.0" startX="-116.0" startY="-9.0" stroke="WHITE" strokeWidth="2.0" />
+                  <PieChart fx:id="graficoRecursosDistribuidos" layoutX="33.0" layoutY="62.0" prefHeight="298.0" prefWidth="330.0" stylesheets="@../css/DashboardStyle.css">
+                     <padding>
+                        <Insets top="100.0" />
+                     </padding>
+                  </PieChart>
+               </children>
+            </Pane>
+            <Pane layoutX="17.0" layoutY="14.0" prefHeight="130.0" prefWidth="1224.0" stylesheets="@../css/DashboardStyle.css">
+               <children>
+                  <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#425b9a" height="130.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" styleClass="rounded-rect" width="232.0" />
+                  <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#425b9a" height="130.0" layoutX="247.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" styleClass="rounded-rect" width="232.0" />
+                  <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#425b9a" height="130.0" layoutX="740.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" styleClass="rounded-rect" width="232.0" />
+                  <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#425b9a" height="130.0" layoutX="984.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" styleClass="rounded-rect" width="232.0" />
+                  <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#425b9a" height="130.0" layoutX="493.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" styleClass="rounded-rect" width="232.0" />
+                  <Label layoutX="21.0" layoutY="22.0" prefHeight="26.0" prefWidth="190.0" text="Habitantes en peligro" textFill="WHITE">
+                     <font>
+                        <Font name="System Bold" size="17.0" />
+                     </font>
+                  </Label>
+                  <Label layoutX="268.0" layoutY="22.0" prefHeight="26.0" prefWidth="190.0" text="Habitantes evacuados" textFill="WHITE">
+                     <font>
+                        <Font name="System Bold" size="17.0" />
+                     </font>
+                  </Label>
+                  <Label layoutX="514.0" layoutY="22.0" prefHeight="26.0" prefWidth="190.0" text="Habitantes pendientes" textFill="WHITE">
+                     <font>
+                        <Font name="System Bold" size="17.0" />
+                     </font>
+                  </Label>
+                  <Label layoutX="773.0" layoutY="22.0" prefHeight="26.0" prefWidth="166.0" text="Tiempo del desastre" textFill="WHITE">
+                     <font>
+                        <Font name="System Bold" size="17.0" />
+                     </font>
+                  </Label>
+                  <Label layoutX="1015.0" layoutY="22.0" prefHeight="26.0" prefWidth="171.0" text="Recursos disponibles" textFill="WHITE">
+                     <font>
+                        <Font name="System Bold" size="17.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="labelHabitantesPeligro" alignment="CENTER" layoutX="11.0" layoutY="65.0" prefHeight="34.0" prefWidth="200.0" text="0" textFill="WHITE">
+                     <font>
+                        <Font name="System Bold" size="23.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="labelHabitantesEvacuados" alignment="CENTER" layoutX="262.0" layoutY="65.0" prefHeight="34.0" prefWidth="200.0" text="0" textFill="WHITE">
+                     <font>
+                        <Font name="System Bold" size="23.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="labelHabitantesPendientes" alignment="CENTER" layoutX="508.0" layoutY="65.0" prefHeight="34.0" prefWidth="200.0" text="0" textFill="WHITE">
+                     <font>
+                        <Font name="System Bold" size="23.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="labelTiempoDesastre" alignment="CENTER" layoutX="755.0" layoutY="65.0" prefHeight="34.0" prefWidth="207.0" text="0" textFill="WHITE">
+                     <font>
+                        <Font name="System Bold" size="23.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="labelRecursosDisponibles" alignment="CENTER" layoutX="999.0" layoutY="65.0" prefHeight="34.0" prefWidth="207.0" text="0" textFill="WHITE">
+                     <font>
+                        <Font name="System Bold" size="23.0" />
+                     </font>
+                  </Label>
+               </children>
+            </Pane>
          </children>
       </AnchorPane>
    </children>
