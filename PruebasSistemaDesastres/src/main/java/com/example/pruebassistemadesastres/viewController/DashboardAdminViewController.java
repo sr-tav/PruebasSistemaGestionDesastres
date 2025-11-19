@@ -218,6 +218,7 @@ public class DashboardAdminViewController {
             Municipio seleccionado = comboMunicipio.getSelectionModel().getSelectedItem();
             if (seleccionado == null) return;
 
+            limpiarRutasMostradas();
             mostrarMarcadoresMunicipio(seleccionado);
 
             List<Zona> zonasMunicipio = sistemaGestionDesastres.getZonas().stream()
@@ -299,6 +300,7 @@ public class DashboardAdminViewController {
      *
      */
     public void mostrarInicioDeMunicipios() {
+        limpiarRutasMostradas();
         if (ordenMunicipios.isEmpty()) return;
 
         String nombre = ordenMunicipios.get(idxMunicipio);
@@ -309,7 +311,7 @@ public class DashboardAdminViewController {
 
             Coordinate centro = centroDeMunicipio(municipioActivo);
             if (centro != null) {
-                centrarEn(centro, 14); 
+                centrarEn(centro, 14);
             } else {
                 System.err.println("No hay centro para el municipio: " + nombre);
             }
@@ -386,6 +388,7 @@ public class DashboardAdminViewController {
     void clickDer(ActionEvent event) {
         System.out.println("accion dere");
         if (ordenMunicipios.isEmpty()) return;
+        limpiarRutasMostradas();
         idxMunicipio = (idxMunicipio + 1) % ordenMunicipios.size();
         mostrarInicioDeMunicipios();
     }
@@ -398,6 +401,7 @@ public class DashboardAdminViewController {
     void clickIzq(ActionEvent event) {
         System.out.println("accion izq");
         if (ordenMunicipios.isEmpty()) return;
+        limpiarRutasMostradas();
         idxMunicipio = (idxMunicipio - 1 + ordenMunicipios.size()) % ordenMunicipios.size();
         mostrarInicioDeMunicipios();
     }
@@ -462,6 +466,7 @@ public class DashboardAdminViewController {
     @FXML
     void clickRutas(ActionEvent event) {
         modoCompacto();
+        inicializarCombos();
         PaneInicio.setVisible(false);
         PaneRutas.setVisible(true);
         PaneEstads.setVisible(false);
@@ -473,40 +478,70 @@ public class DashboardAdminViewController {
      */
     @FXML
     private void btnMostrarRutaAction(ActionEvent event) {
-        Zona inicio = comboZonaInicio.getSelectionModel().getSelectedItem();
+        Zona inicio  = comboZonaInicio.getSelectionModel().getSelectedItem();
         Zona destino = comboZonaFinal.getSelectionModel().getSelectedItem();
 
         if (inicio == null || destino == null) {
-            System.out.println("Debes seleccionar una zona de inicio y una de destino.");
+            mostrarInfo("Debes seleccionar una zona de inicio y una de destino.");
             return;
         }
 
+        // Log de seguridad
+        System.out.println("[RUTAS] Inicio: " + inicio.getNombre() + " - Destino: " + destino.getNombre());
+
         Ruta ruta = sistemaGestionDesastres.getGrafo().calcularRutaMasCorta(inicio, destino);
-        if (ruta == null) {
-            System.out.println("No hay ruta disponible entre estas zonas.");
+        if (ruta == null || ruta.getParadas() == null || ruta.getParadas().size() < 2) {
+            mostrarInfo("No hay ruta lógica en el grafo entre estas zonas.");
+            // Fallback: al menos intenta ruteo OSRM directo entre ambos puntos
+            List<Coordinate> wp = List.of(
+                    new Coordinate(inicio.getLatitud(), inicio.getAltitud()),
+                    new Coordinate(destino.getLatitud(), destino.getAltitud())
+            );
+            ServicioRutas.fetchPolylineDrivingAsync(wp).thenAccept(path -> {
+                Platform.runLater(() -> {
+                    if (path == null || path.size() < 2) {
+                        mostrarInfo("Tampoco se encontró ruta de manejo en el ruteador.");
+                        return;
+                    }
+                    CoordinateLine line = new CoordinateLine(path)
+                            .setVisible(true).setColor(Color.web("#3399ff")).setWidth(4);
+                    mapView.addCoordinateLine(line);
+                    rutasDibujadas.add(line);
+                    mapView.setCenter(path.get(path.size()/2));
+                    mapView.setZoom(14);
+                });
+            });
             return;
         }
+
         List<Coordinate> waypoints = coordsDeRuta(ruta);
 
         ServicioRutas.fetchPolylineDrivingAsync(waypoints).thenAccept(path -> {
-            if (path == null || path.size() < 2) return;
+            if (path == null || path.size() < 2) {
+                // Si el ruteador no puede, dibuja la polilínea lógica del grafo
+                Platform.runLater(() -> {
+                    CoordinateLine line = new CoordinateLine(waypoints)
+                            .setVisible(true).setColor(Color.web("#3399ff")).setWidth(4);
 
-            // DIBUJA la ruta ruteada
+                    mapView.addCoordinateLine(line);
+                    rutasDibujadas.add(line);
+                    mapView.setCenter(waypoints.get(waypoints.size()/2));
+                    mapView.setZoom(14);
+                });
+                return;
+            }
+
             Platform.runLater(() -> {
                 CoordinateLine line = new CoordinateLine(path)
-                        .setVisible(true)
-                        .setColor(Color.web("#3399ff"))
-                        .setWidth(4);
+                        .setVisible(true).setColor(Color.web("#3399ff")).setWidth(4);
                 mapView.addCoordinateLine(line);
-
-                double latCentro = path.stream().mapToDouble(Coordinate::getLatitude).average().orElse(0);
-                double lonCentro = path.stream().mapToDouble(Coordinate::getLongitude).average().orElse(0);
-                mapView.setCenter(new Coordinate(latCentro, lonCentro));
+                rutasDibujadas.add(line);
+                double latC = path.stream().mapToDouble(Coordinate::getLatitude).average().orElse(0);
+                double lonC = path.stream().mapToDouble(Coordinate::getLongitude).average().orElse(0);
+                mapView.setCenter(new Coordinate(latC, lonC));
                 mapView.setZoom(14);
 
-                // Leyenda
-                List<Zona> paradas = ruta.getParadas();
-                refrescarLeyenda(paradas);
+                refrescarLeyenda(ruta.getParadas());
             });
         });
     }
@@ -913,7 +948,7 @@ public class DashboardAdminViewController {
     private Coordinate centroDeMunicipio(Municipio m) {
         if (m == null) return null;
         List<Zona> zonasMunicipio = sistemaGestionDesastres.getZonas().stream()
-                .filter(z -> z.getMunicipio() == m)
+                .filter(z -> z.getMunicipio().equals(m))
                 .toList();
 
         List<Zona> ciudades = zonasMunicipio.stream()
@@ -1155,15 +1190,19 @@ public class DashboardAdminViewController {
      *
      */
     private void reaplicarOverlaysDesastre() {
-        if (desastreActivo == null) return;
-        if (markerDesastre != null) {
-            mapView.removeMarker(markerDesastre);
-            mapView.addMarker(markerDesastre);
+        if (desastreActivo != null) {
+            if (markerDesastre != null) { mapView.removeMarker(markerDesastre); mapView.addMarker(markerDesastre); }
+            if (cCritico  != null) { mapView.removeMapCircle(cCritico);  mapView.addMapCircle(cCritico); }
+            if (cModerado != null) { mapView.removeMapCircle(cModerado); mapView.addMapCircle(cModerado); }
+            if (cEstable  != null) { mapView.removeMapCircle(cEstable);  mapView.addMapCircle(cEstable); }
         }
-        if (cCritico != null) { mapView.removeMapCircle(cCritico); mapView.addMapCircle(cCritico); }
-        if (cModerado != null) { mapView.removeMapCircle(cModerado); mapView.addMapCircle(cModerado); }
-        if (cEstable != null) { mapView.removeMapCircle(cEstable); mapView.addMapCircle(cEstable); }
+        // ya re-aplicas envíos:
         for (CoordinateLine cl : lineasPorEnvio.values()) {
+            mapView.removeCoordinateLine(cl);
+            mapView.addCoordinateLine(cl);
+        }
+        // ✨ NUEVO: re-aplica rutas mostradas manualmente
+        for (CoordinateLine cl : rutasDibujadas) {
             mapView.removeCoordinateLine(cl);
             mapView.addCoordinateLine(cl);
         }
@@ -1519,6 +1558,15 @@ public class DashboardAdminViewController {
             });
         }
         refrescarComboSalidaPorDesastre();
+        if (mapView != null) {
+            if (mapView.initializedProperty().get()) {
+                inicializarCombos();
+            } else {
+                mapView.initializedProperty().addListener((o, was, ready) -> {
+                    if (ready) inicializarCombos();
+                });
+            }
+        }
     }
     private void refrescarComboSalidaPorDesastre() {
         Zona da = sistemaGestionDesastres.getDesastreActivo();
@@ -1721,5 +1769,11 @@ public class DashboardAdminViewController {
         AnchorPane.setRightAnchor(chart, 16.0);
         chart.setMinSize(Region.USE_COMPUTED_SIZE, Region.USE_COMPUTED_SIZE);
         chart.setMaxSize(Region.USE_COMPUTED_SIZE, Region.USE_COMPUTED_SIZE);
+    }
+    private void limpiarRutasMostradas() {
+        for (CoordinateLine cl : rutasDibujadas) {
+            mapView.removeCoordinateLine(cl);
+        }
+        rutasDibujadas.clear();
     }
 }
